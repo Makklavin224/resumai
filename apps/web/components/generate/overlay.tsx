@@ -26,7 +26,7 @@ export function GenerateOverlay({ step }: { step: GenerateStep }) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-md p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-2xl p-4"
       role="dialog"
       aria-modal="true"
       aria-label="Генерация отклика"
@@ -40,7 +40,7 @@ export function GenerateOverlay({ step }: { step: GenerateStep }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.97, y: 8 }}
         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-        className="glass w-full max-w-md space-y-6 rounded-3xl p-7 shadow-[var(--shadow-elevated)]"
+        className="w-full max-w-md space-y-6 rounded-3xl border border-border bg-card p-7 shadow-[var(--shadow-elevated)]"
       >
         <header className="space-y-1 text-center">
           <h2 className="font-display text-2xl font-semibold">Создаём ваш отклик</h2>

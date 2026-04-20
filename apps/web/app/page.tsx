@@ -161,7 +161,6 @@ export default function LandingPage() {
       <section className="mx-auto max-w-6xl px-4 pt-6 pb-10 sm:px-6" id="pains">
         <AnimatedHeading
           eyebrow="Почему отклики «уходят в молчание»"
-          withQuestion
           className="mb-10"
         >
           Дело не в вас. Дело в фильтре
@@ -184,7 +183,7 @@ export default function LandingPage() {
       </section>
 
       <section id="how-it-works" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <AnimatedHeading eyebrow="Как это работает" withQuestion className="mb-10">
+        <AnimatedHeading eyebrow="Как это работает" className="mb-10">
           От ссылки до готового отклика — 30 секунд
         </AnimatedHeading>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
