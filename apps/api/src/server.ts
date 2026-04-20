@@ -12,6 +12,9 @@ import { healthRoutes } from './routes/health.js';
 import { sessionRoutes } from './routes/session.js';
 import { generateRoutes } from './routes/generate.js';
 import { paymentRoutes } from './routes/payments.js';
+import { authRoutes } from './routes/auth.js';
+import { profileRoutes } from './routes/profile.js';
+import { adminRoutes } from './routes/admin.js';
 import { LIMITS } from '@resumai/shared';
 
 export async function buildServer() {
@@ -45,6 +48,9 @@ export async function buildServer() {
 
   await app.register(healthRoutes);
   await app.register(sessionRoutes);
+  await app.register(authRoutes);
+  await app.register(profileRoutes);
+  await app.register(adminRoutes);
   await app.register(generateRoutes);
   await app.register(paymentRoutes);
 

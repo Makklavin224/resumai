@@ -26,6 +26,12 @@ const EnvSchema = z.object({
 
   PLAYWRIGHT_SERVICE_URL: z.string().optional().default(''),
 
+  /**
+   * Comma-separated emails auto-promoted to admin on registration.
+   * E.g. ADMIN_EMAILS=densemenov386@gmail.com,founder@resumai.ru
+   */
+  ADMIN_EMAILS: z.string().optional().default(''),
+
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
   RATE_LIMIT_GENERATE_PER_HOUR: z.coerce.number().int().positive().default(20),
 });

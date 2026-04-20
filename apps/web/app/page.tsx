@@ -1,40 +1,96 @@
 import Link from 'next/link';
 import {
   ArrowRight,
-  Clock,
   Sparkles,
-  ShieldCheck,
   Target,
-  TrendingUp,
   Wand2,
+  MessageSquareOff,
+  Cpu,
+  Users,
+  Timer,
+  CheckCircle2,
+  X,
+  Zap,
 } from 'lucide-react';
 import { AdaptForm } from '@/components/forms/adapt-form';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { PricingBlock } from '@/components/pricing/pricing-block';
+
+const STAT_STRIP = [
+  {
+    value: '82%',
+    label: 'откликов без ответа',
+    hint: 'hh.ru, 2025',
+  },
+  {
+    value: '11,4',
+    label: 'резюме на вакансию',
+    hint: 'индекс hh, март 2026',
+  },
+  {
+    value: '8 сек',
+    label: 'на первое решение',
+    hint: 'рекрутер + ATS',
+  },
+  {
+    value: '78%',
+    label: 'компаний фильтруют ATS',
+    hint: 'исследование vc.ru',
+  },
+];
+
+const PAINS = [
+  {
+    icon: MessageSquareOff,
+    title: 'Тишина после 50 откликов',
+    body: 'Вы отправили резюме — и ничего. Вы не хуже других. Просто ATS отсеивает вас раньше, чем резюме увидит живой человек.',
+  },
+  {
+    icon: Cpu,
+    title: '8 секунд и робот-фильтр',
+    body: 'Рекрутеру хватает 7–8 секунд, ATS — ещё меньше. Без ключевых слов вакансии ваш опыт просто не «прочитают».',
+  },
+  {
+    icon: Users,
+    title: '11 кандидатов на вакансию',
+    body: 'Индекс hh.ru — 11,4. Быть «ещё одним подходящим» недостаточно. Нужно попадать прицельно в то, что ищет работодатель.',
+  },
+];
 
 const STEPS = [
   {
     icon: Target,
-    title: 'Парсим вакансию',
-    desc: 'Извлекаем ключевые требования, стоп-слова, уровень и стек.',
+    title: 'Разбираем вакансию',
+    desc: 'Достаём ключевые слова, стоп-слова и скрытые требования, которые видит ATS.',
   },
   {
     icon: Wand2,
     title: 'Адаптируем резюме',
-    desc: 'AI находит 3 пробела и подсказывает формулировки, которые попадут в фильтр HR.',
+    desc: 'AI переписывает формулировки под эту конкретную вакансию. Конкретно, с глаголами и цифрами.',
   },
   {
     icon: Sparkles,
-    title: 'Пишем письмо',
-    desc: 'Личное сопроводительное на 120–180 слов без шаблонных фраз.',
+    title: 'Пишем сопроводительное',
+    desc: 'Живое письмо 120–180 слов: ваши сильные стороны + один вопрос работодателю. Без канцелярита.',
   },
 ];
 
-const FEATURES = [
-  { icon: Clock, label: '2 минуты вместо 30' },
-  { icon: TrendingUp, label: '+65% откликов работодателей' },
-  { icon: ShieldCheck, label: 'Данные остаются в РФ (152-ФЗ)' },
-];
+const VS_HH_PRO = {
+  hhPro: [
+    { ok: true, text: 'Поднимает резюме в топ списка' },
+    { ok: false, text: 'Не переписывает содержимое' },
+    { ok: false, text: 'Не адаптирует под вакансию' },
+    { ok: false, text: 'Не пишет сопроводительное' },
+  ],
+  resumai: [
+    { ok: true, text: 'Находит пробелы против требований' },
+    { ok: true, text: 'Переписывает формулировки под ATS' },
+    { ok: true, text: 'Подстраивает под конкретную вакансию' },
+    { ok: true, text: 'Пишет сопроводительное письмо' },
+  ],
+};
 
 export default function LandingPage() {
   return (
@@ -44,34 +100,83 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-20">
           <div className="mx-auto max-w-3xl text-center">
             <Badge variant="primary" className="mx-auto mb-5">
-              <Sparkles className="size-3.5" />
-              AI для откликов на hh.ru
+              <Zap className="size-3.5" />
+              AI-адаптация под ATS и рекрутера
             </Badge>
             <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-              Адаптируем резюме под вакансию за{' '}
+              82% ваших откликов{' '}
               <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                2 минуты
+                никто не читает
               </span>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Вставь ссылку или PDF своего резюме и ссылку на вакансию hh.ru. AI найдёт пробелы,
-              подскажет правки и напишет личное сопроводительное письмо, которое читают.
+              В 2026 году на каждую вакансию hh.ru — 11 кандидатов. ATS-фильтр решает за 8
+              секунд. Мы переписываем ваше резюме под конкретную вакансию так, чтобы его увидел
+              живой рекрутер — и написали вам в ответ.
             </p>
-            <div className="mx-auto mt-7 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-              {FEATURES.map(({ icon: Icon, label }) => (
-                <div
-                  key={label}
-                  className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 backdrop-blur"
-                >
-                  <Icon className="size-4 text-primary" />
-                  <span className="font-medium">{label}</span>
-                </div>
-              ))}
+            <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-3">
+              <Button size="lg" asChild>
+                <Link href="#adapt">
+                  <Sparkles className="size-4" />
+                  Попробовать бесплатно
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="#how-it-works">Как это работает</Link>
+              </Button>
             </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Без регистрации · 1 бесплатный отклик · 30 секунд на генерацию
+            </p>
           </div>
-          <div className="mx-auto mt-10 max-w-4xl">
+
+          <div
+            aria-label="Статистика рынка"
+            className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4"
+          >
+            {STAT_STRIP.map((s) => (
+              <div
+                key={s.label}
+                className="glass rounded-2xl border-border/60 p-4 text-center"
+              >
+                <p className="font-display text-2xl font-bold text-primary sm:text-3xl">
+                  {s.value}
+                </p>
+                <p className="mt-1 text-xs font-medium text-foreground">{s.label}</p>
+                <p className="mt-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {s.hint}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div id="adapt" className="mx-auto mt-12 max-w-4xl scroll-mt-20">
             <AdaptForm />
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-10 sm:px-6" id="pains">
+        <div className="mb-10 text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+            Почему отклики «уходят в молчание»
+          </p>
+          <h2 className="font-display mt-2 text-3xl font-bold sm:text-4xl">
+            Дело не в вас. Дело в фильтре.
+          </h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {PAINS.map((p) => (
+            <Card key={p.title}>
+              <CardContent className="flex flex-col gap-3 p-6">
+                <span className="grid size-11 place-items-center rounded-xl bg-primary/12 text-primary">
+                  <p.icon className="size-5" />
+                </span>
+                <h3 className="font-display text-lg font-semibold">{p.title}</h3>
+                <p className="text-sm text-muted-foreground">{p.body}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </section>
 
@@ -81,7 +186,7 @@ export default function LandingPage() {
             Как это работает
           </p>
           <h2 className="font-display mt-2 text-3xl font-bold sm:text-4xl">
-            От пустой формы до отклика — три шага
+            От ссылки до готового отклика — 30 секунд
           </h2>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
@@ -102,16 +207,18 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+      <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
         <Card className="overflow-hidden">
           <CardContent className="grid gap-8 p-8 md:grid-cols-2 md:p-12">
             <div className="space-y-4">
               <Badge variant="muted">Обычный отклик</Badge>
               <p className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm italic text-muted-foreground">
-                «Здравствуйте, меня зовут Иван. Я ищу работу Frontend-разработчиком. У меня есть
-                опыт работы с React и JS. Готов учиться…»
+                «Здравствуйте, меня зовут Иван. Ищу работу Frontend-разработчиком. Есть опыт с
+                React и JS. Готов учиться…»
               </p>
-              <p className="text-xs text-muted-foreground">↓ Ответ — молчание</p>
+              <p className="text-xs text-muted-foreground">
+                ↓ ATS-фильтр: стоп-слова «готов учиться», нет ключевых навыков вакансии → отбой.
+              </p>
             </div>
             <div className="space-y-4">
               <Badge variant="primary">
@@ -120,24 +227,91 @@ export default function LandingPage() {
               </Badge>
               <p className="rounded-2xl border border-primary/20 bg-primary/5 p-5 text-sm font-medium leading-relaxed">
                 «Здравствуйте! Мой опыт разработки на{' '}
-                <mark className="bg-primary/25 px-1 rounded text-foreground">React (3 года)</mark>{' '}
-                идеально подходит для вашей задачи{' '}
-                <mark className="bg-primary/25 px-1 rounded text-foreground">оптимизации SPA</mark>
-                . В прошлом проекте я ускорил загрузку на 40%…»
+                <mark className="rounded bg-primary/25 px-1 text-foreground">React (3 года)</mark>{' '}
+                совпадает с задачей{' '}
+                <mark className="rounded bg-primary/25 px-1 text-foreground">
+                  оптимизации SPA
+                </mark>
+                . В последнем проекте снизил LCP с 4,2 с до 1,6 с…»
               </p>
-              <p className="text-xs font-medium text-primary">↓ Ответ в среднем за 2 рабочих дня</p>
+              <p className="text-xs font-medium text-primary">
+                ↓ Ключевые слова вакансии + измеримый результат → рекрутер звонит.
+              </p>
             </div>
           </CardContent>
         </Card>
+      </section>
 
-        <div className="mt-10 text-center">
-          <Link
-            href="#top"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary"
-          >
-            Попробовать бесплатно
-            <ArrowRight className="size-4" />
-          </Link>
+      <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+        <Card className="glass overflow-hidden">
+          <CardContent className="grid gap-8 p-8 md:grid-cols-2 md:p-12">
+            <div>
+              <Badge variant="muted" className="mb-3">
+                hh.ru PRO · от 390 ₽/неделю
+              </Badge>
+              <h3 className="font-display text-2xl font-bold">Поднимает в топ списка</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Но не меняет содержимое резюме. Если резюме не попадает в ключи — вы просто
+                быстрее оказываетесь в топе мусорной кучи.
+              </p>
+              <ul className="mt-5 space-y-2.5">
+                {VS_HH_PRO.hhPro.map((i) => (
+                  <li key={i.text} className="flex items-start gap-2.5 text-sm">
+                    {i.ok ? (
+                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                    ) : (
+                      <X className="mt-0.5 size-4 shrink-0 text-destructive" />
+                    )}
+                    <span className={i.ok ? '' : 'text-muted-foreground line-through'}>
+                      {i.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-2xl bg-primary/5 p-6 ring-1 ring-primary/20 md:p-8">
+              <Badge variant="primary" className="mb-3">
+                <Sparkles className="size-3.5" />
+                ResumAI · от 49 ₽/отклик
+              </Badge>
+              <h3 className="font-display text-2xl font-bold">Делает так, чтобы топ имел смысл</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Мы переписываем содержимое так, чтобы ATS-фильтр пропустил резюме, а рекрутер
+                сразу увидел совпадение с вакансией.
+              </p>
+              <ul className="mt-5 space-y-2.5">
+                {VS_HH_PRO.resumai.map((i) => (
+                  <li key={i.text} className="flex items-start gap-2.5 text-sm">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[color:var(--success)]" />
+                    <span className="font-medium">{i.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section id="pricing" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-16 sm:px-6">
+        <PricingBlock />
+      </section>
+
+      <section className="mx-auto max-w-3xl px-4 pb-20 text-center sm:px-6">
+        <Timer className="mx-auto size-10 text-primary" />
+        <h2 className="font-display mt-4 text-3xl font-bold sm:text-4xl">
+          Каждый вечер, потраченный на ручную переделку резюме, — это один вечер, который вы не
+          увидели свою семью.
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+          30 секунд на отклик вместо 40 минут. Первый — бесплатно.
+        </p>
+        <div className="mt-6">
+          <Button size="lg" asChild>
+            <Link href="#adapt">
+              Попробовать сейчас
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
         </div>
       </section>
     </>

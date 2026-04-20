@@ -15,7 +15,8 @@ import { extractResumeDocument } from '../services/parser/pdf-extract.js';
 import { generateAdaptation } from '../services/ai/generator.js';
 import { storeResult, fetchResult } from '../services/cache/results.js';
 import { db } from '../db/client.js';
-import { errorLogs } from '../db/schema.js';
+import { errorLogs, generations, sessions as sessionsTable } from '../db/schema.js';
+import { eq } from 'drizzle-orm';
 
 const TextPartSchema = z.object({
   type: z.literal('text'),
@@ -209,6 +210,29 @@ export const generateRoutes: FastifyPluginAsync = async (app) => {
           result.creditsRemaining = await deductCredit(session.sessionId);
         }
         await storeResult(session.sessionId, result);
+
+        // Persist generation metadata for profile + admin history.
+        const [currentSession] = await db
+          .select()
+          .from(sessionsTable)
+          .where(eq(sessionsTable.id, session.sessionId));
+        await db
+          .insert(generations)
+          .values({
+            sessionId: session.sessionId,
+            userId: currentSession?.userId ?? null,
+            resultId: result.resultId,
+            vacancyTitle: payload.vacancy.title,
+            vacancyCompany: payload.vacancy.company,
+            resumeTitle: payload.resume.title ?? null,
+            kind: result.kind,
+            model: result.model,
+            durationMs: result.durationMs,
+          })
+          .catch(() => {
+            // Non-fatal — history save must never kill the response.
+          });
+
         return reply.send(result.kind === 'full' ? result : toPreview(result));
       } catch (err) {
         const code =

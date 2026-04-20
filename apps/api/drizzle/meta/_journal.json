@@ -8,6 +8,13 @@
       "when": 1776654952408,
       "tag": "0000_many_wind_dancer",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776658107606,
+      "tag": "0001_curvy_jackal",
+      "breakpoints": true
     }
   ]
 }
