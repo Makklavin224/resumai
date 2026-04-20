@@ -16,12 +16,23 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PricingBlock } from '@/components/pricing/pricing-block';
 import { AnimatedHeading } from '@/components/animated-heading';
+import { CountUp } from '@/components/motion/count-up';
+import { WordReveal } from '@/components/motion/word-reveal';
+import { MagneticButton } from '@/components/motion/magnetic-button';
+import { FloatingOrbs } from '@/components/motion/floating-orbs';
 
-const STAT_STRIP = [
-  { value: '82%', label: 'откликов без ответа', hint: 'hh.ru, 2025' },
-  { value: '11,4', label: 'резюме на вакансию', hint: 'индекс hh, март 2026' },
-  { value: '8 сек', label: 'на первое решение', hint: 'рекрутер + ATS' },
-  { value: '78%', label: 'компаний фильтруют ATS', hint: 'исследование vc.ru' },
+interface Stat {
+  value: number;
+  decimals?: number;
+  suffix: string;
+  label: string;
+  hint: string;
+}
+const STAT_STRIP: Stat[] = [
+  { value: 82, suffix: '%', label: 'откликов без ответа', hint: 'hh.ru, 2025' },
+  { value: 11.4, decimals: 1, suffix: '', label: 'резюме на вакансию', hint: 'индекс hh, март 2026' },
+  { value: 8, suffix: ' сек', label: 'на первое решение', hint: 'рекрутер + ATS' },
+  { value: 78, suffix: '%', label: 'компаний фильтруют ATS', hint: 'исследование vc.ru' },
 ];
 
 const PAINS = [
@@ -37,7 +48,7 @@ const PAINS = [
   },
   {
     icon: Users,
-    title: '11 резюме на одну вакансию',
+    title: '11 кандидатов на место',
     body: 'Индекс hh.ru — 11,4. Быть «ещё одним подходящим» недостаточно. Нужно попадать прицельно в то, что ищет работодатель.',
   },
 ];
@@ -79,12 +90,17 @@ export default function LandingPage() {
   return (
     <>
       <section className="relative isolate overflow-hidden">
-        <div className="gradient-mesh absolute inset-0 -z-10 opacity-80" aria-hidden />
+        <div className="gradient-mesh absolute inset-0 -z-10 opacity-70" aria-hidden />
+        <FloatingOrbs />
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-20">
           <div className="mx-auto max-w-3xl text-center">
             <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl">
-              <span className="block">82% ваших откликов</span>
-              <span className="mt-1 block text-primary/85">никто не читает</span>
+              <WordReveal text="82% ваших откликов" className="block" />
+              <WordReveal
+                text="никто не читает"
+                delay={0.3}
+                className="mt-1 block text-primary/90"
+              />
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">
               В 2026 году на каждую вакансию hh.ru — 11 кандидатов. ATS-фильтр решает за 8
@@ -92,12 +108,14 @@ export default function LandingPage() {
               рекрутер — и написал вам в ответ.
             </p>
             <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-3">
-              <Button size="lg" asChild>
-                <Link href="#adapt">
-                  <Sparkles className="size-4" />
-                  Попробовать бесплатно
-                </Link>
-              </Button>
+              <MagneticButton>
+                <Button size="lg" asChild>
+                  <Link href="#adapt">
+                    <Sparkles className="size-4" />
+                    Попробовать бесплатно
+                  </Link>
+                </Button>
+              </MagneticButton>
               <Button size="lg" variant="outline" asChild>
                 <Link href="#how-it-works">Как это работает</Link>
               </Button>
@@ -117,7 +135,7 @@ export default function LandingPage() {
                 className="glass rounded-2xl border-border/60 p-4 text-center"
               >
                 <p className="font-display text-2xl font-bold text-primary sm:text-3xl">
-                  {s.value}
+                  <CountUp to={s.value} decimals={s.decimals} suffix={s.suffix} />
                 </p>
                 <p className="mt-1 text-xs font-medium text-foreground">{s.label}</p>
                 <p className="mt-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -141,16 +159,14 @@ export default function LandingPage() {
         >
           Дело не в вас. Дело в фильтре
         </AnimatedHeading>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {PAINS.map((p) => (
             <Card key={p.title} className="h-full">
               <CardContent className="flex h-full flex-col gap-3 p-6">
                 <span className="grid size-11 place-items-center rounded-xl bg-primary/12 text-primary">
                   <p.icon className="size-5" />
                 </span>
-                <h3 className="font-display text-base font-semibold leading-snug sm:text-lg">
-                  {p.title}
-                </h3>
+                <h3 className="font-display text-lg font-semibold leading-snug">{p.title}</h3>
                 <p className="text-sm text-muted-foreground">{p.body}</p>
               </CardContent>
             </Card>
@@ -159,14 +175,10 @@ export default function LandingPage() {
       </section>
 
       <section id="how-it-works" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <AnimatedHeading
-          eyebrow="Как это работает"
-          withQuestion
-          className="mb-10"
-        >
+        <AnimatedHeading eyebrow="Как это работает" withQuestion className="mb-10">
           От ссылки до готового отклика — 30 секунд
         </AnimatedHeading>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {STEPS.map((s, i) => (
             <Card key={s.title} className="relative h-full overflow-hidden">
               <CardContent className="flex h-full flex-col gap-3 p-6">
@@ -176,9 +188,7 @@ export default function LandingPage() {
                   </span>
                   <span className="font-mono text-xs text-muted-foreground">0{i + 1}</span>
                 </div>
-                <h3 className="font-display text-base font-semibold leading-snug sm:text-lg">
-                  {s.title}
-                </h3>
+                <h3 className="font-display text-lg font-semibold leading-snug">{s.title}</h3>
                 <p className="text-sm text-muted-foreground">{s.desc}</p>
               </CardContent>
             </Card>
@@ -188,12 +198,12 @@ export default function LandingPage() {
 
       <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
         <Card className="overflow-hidden">
-          <CardContent className="grid items-stretch gap-8 p-8 md:grid-cols-2 md:p-12">
-            <div className="flex h-full flex-col">
+          <CardContent className="grid items-stretch gap-6 p-6 md:grid-cols-2 md:p-10">
+            <div className="flex h-full flex-col rounded-2xl border border-dashed border-border bg-muted/20 p-6">
               <Badge variant="muted" className="self-start">
                 Обычный отклик
               </Badge>
-              <p className="mt-4 flex-1 rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm italic text-muted-foreground">
+              <p className="mt-4 flex-1 rounded-2xl border border-dashed border-border bg-background/60 p-5 text-sm italic text-muted-foreground">
                 «Здравствуйте, меня зовут Иван. Ищу работу Frontend-разработчиком. Есть опыт с
                 React и JS. Готов учиться…»
               </p>
@@ -202,16 +212,16 @@ export default function LandingPage() {
                 учиться» и отсутствию ключевых навыков вакансии.
               </p>
             </div>
-            <div className="flex h-full flex-col">
+            <div className="flex h-full flex-col rounded-2xl border border-primary/25 bg-primary/5 p-6">
               <Badge variant="primary" className="self-start">
                 <Sparkles className="size-3.5" />
                 Адаптировал ResumAI
               </Badge>
-              <p className="mt-4 flex-1 rounded-2xl border border-primary/20 bg-primary/5 p-5 text-sm font-medium leading-relaxed">
+              <p className="mt-4 flex-1 rounded-2xl border border-primary/20 bg-background/70 p-5 text-sm font-medium leading-relaxed">
                 «Здравствуйте! Мой опыт разработки на{' '}
-                <mark className="rounded bg-primary/25 px-1 text-foreground">React (3 года)</mark>{' '}
+                <mark className="rounded bg-accent/40 px-1 text-foreground">React (3 года)</mark>{' '}
                 совпадает с задачей{' '}
-                <mark className="rounded bg-primary/25 px-1 text-foreground">
+                <mark className="rounded bg-accent/40 px-1 text-foreground">
                   оптимизации SPA
                 </mark>
                 . В последнем проекте снизил LCP с 4,2 с до 1,6 с…»
@@ -226,8 +236,8 @@ export default function LandingPage() {
 
       <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
         <Card className="glass overflow-hidden">
-          <CardContent className="grid items-stretch gap-8 p-8 md:grid-cols-2 md:p-12">
-            <div className="flex h-full flex-col">
+          <CardContent className="grid items-stretch gap-6 p-6 md:grid-cols-2 md:p-10">
+            <div className="flex h-full flex-col rounded-2xl border border-border/60 bg-muted/10 p-6 md:p-8">
               <Badge variant="muted" className="mb-3 self-start">
                 hh.ru PRO · от 390 ₽/неделю
               </Badge>
@@ -251,10 +261,10 @@ export default function LandingPage() {
                 ))}
               </ul>
             </div>
-            <div className="flex h-full flex-col rounded-2xl bg-primary/5 p-6 ring-1 ring-primary/20 md:p-8">
+            <div className="flex h-full flex-col rounded-2xl bg-primary/5 p-6 ring-1 ring-primary/25 md:p-8">
               <Badge variant="primary" className="mb-3 self-start">
                 <Sparkles className="size-3.5" />
-                ResumAI · от 15 ₽/отклик
+                ResumAI · от 10 ₽/отклик
               </Badge>
               <h3 className="font-display text-2xl font-bold">Делает так, чтобы топ имел смысл</h3>
               <p className="mt-2 text-sm text-muted-foreground">
@@ -289,12 +299,14 @@ export default function LandingPage() {
           Первый отклик — бесплатно, без карты.
         </p>
         <div className="mt-6">
-          <Button size="lg" asChild>
-            <Link href="#adapt">
-              Сделать первый отклик
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
+          <MagneticButton>
+            <Button size="lg" asChild>
+              <Link href="#adapt">
+                Сделать первый отклик
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </MagneticButton>
         </div>
       </section>
     </>
