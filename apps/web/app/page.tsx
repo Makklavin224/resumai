@@ -22,6 +22,7 @@ import { MagneticButton } from '@/components/motion/magnetic-button';
 import { FloatingOrbs } from '@/components/motion/floating-orbs';
 import { TiltCard } from '@/components/motion/tilt-card';
 import { KeywordSweep } from '@/components/motion/keyword-sweep';
+import { HeroCta } from '@/components/hero-cta';
 
 interface Stat {
   value: number;
@@ -109,19 +110,8 @@ export default function LandingPage() {
               чтобы решить, попадёте ли вы в руки живого рекрутера. Мы перепишем ваше резюме
               под каждую вакансию так, чтобы фильтр пропустил — а HR набрал ваш номер.
             </p>
-            <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-3">
-              <MagneticButton>
-                <Button size="lg" asChild>
-                  <Link href="/register">
-                    <Sparkles className="size-4" />
-                    Получить 3 отклика
-                  </Link>
-                </Button>
-              </MagneticButton>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="#how-it-works">Как это работает</Link>
-              </Button>
-            </div>
+            <HeroCta />
+
             <p className="mt-3 text-xs text-muted-foreground">
               30 секунд на регистрацию — 3 бесплатных отклика сразу на счёт
             </p>
@@ -306,14 +296,8 @@ export default function LandingPage() {
           Первый отклик — бесплатно, без карты.
         </p>
         <div className="mt-6">
-          <MagneticButton>
-            <Button size="lg" asChild>
-              <Link href="/register">
-                Сделать первый отклик
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          </MagneticButton>
+          <HeroCta variant="final" />
+
         </div>
       </section>
     </>

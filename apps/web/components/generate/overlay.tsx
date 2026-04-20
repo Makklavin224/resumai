@@ -14,6 +14,15 @@ const TIPS = [
 
 export function GenerateOverlay({ step }: { step: GenerateStep }) {
   const [tip, setTip] = useState(TIPS[0]!);
+  // Lock body scroll so the page beneath can't bleed into view while the
+  // modal is open.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
   useEffect(() => {
     const id = setInterval(() => {
       setTip((prev) => {
