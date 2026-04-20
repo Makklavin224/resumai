@@ -101,7 +101,7 @@ export function PricingBlock() {
                     variant={p.popular ? 'primary' : 'outline'}
                     className="w-full"
                   >
-                    <Link href="#adapt">Купить</Link>
+                    <Link href="/register">Купить</Link>
                   </Button>
                 </CardContent>
               </Card>

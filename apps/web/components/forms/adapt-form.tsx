@@ -15,7 +15,7 @@ import { HH_URL_REGEX, LIMITS, SIGNUP_BONUS_CREDITS, type GenerateStep } from '@
 import { ApiClientError } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-client';
 
-const DEFAULT_RESUME: ResumeValue = { mode: 'url', url: '' };
+const DEFAULT_RESUME: ResumeValue = { mode: 'pdf', file: null };
 const DEFAULT_VACANCY: VacancyValue = { mode: 'url', url: '' };
 
 function validate(resume: ResumeValue, vacancy: VacancyValue) {
@@ -178,7 +178,7 @@ export function AdaptForm() {
               : 'Посмотрите, как работает сервис — потом зарегистрируйтесь и получите 3 отклика'}
           </p>
           <div className="flex gap-3">
-            <Button type="button" variant="outline" onClick={reset} disabled={pending}>
+            <Button type="button" size="lg" variant="outline" onClick={reset} disabled={pending}>
               <RefreshCcw className="size-4" />
               Сбросить
             </Button>
