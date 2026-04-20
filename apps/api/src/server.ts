@@ -16,6 +16,7 @@ import { authRoutes } from './routes/auth.js';
 import { oauthStubRoutes } from './routes/auth-oauth.js';
 import { profileRoutes } from './routes/profile.js';
 import { adminRoutes } from './routes/admin.js';
+import { supportRoutes } from './routes/support.js';
 import { LIMITS } from '@resumai/shared';
 
 export async function buildServer() {
@@ -55,6 +56,7 @@ export async function buildServer() {
   await app.register(adminRoutes);
   await app.register(generateRoutes);
   await app.register(paymentRoutes);
+  await app.register(supportRoutes);
 
   app.setErrorHandler((rawErr, _req, reply) => {
     const err = rawErr as FastifyError;

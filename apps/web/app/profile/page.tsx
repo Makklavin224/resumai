@@ -12,6 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { authApi } from '@/lib/auth-client';
 import { formatRub, pluralRu } from '@/lib/format';
 import { PaywallModal } from '@/components/paywall/paywall-modal';
+import { ContactSupport } from '@/components/profile/contact-support';
+import { AlertTriangle } from 'lucide-react';
 
 interface ProfileGeneration {
   id: string;
@@ -39,6 +41,8 @@ interface ProfileData {
         email: string;
         displayName: string | null;
         isAdmin: boolean;
+        isBlocked?: boolean;
+        isSuspicious?: boolean;
       }
     | null;
   credits: number;
@@ -63,6 +67,16 @@ export default function ProfilePage() {
         setLoading(false);
       }
     })();
+  }, []);
+
+  // Success toast after a successful YooKassa redirect back into the cabinet.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('paid') !== '1') return;
+    toast.success('Оплата прошла успешно — кредиты зачислены');
+    url.searchParams.delete('paid');
+    window.history.replaceState({}, '', url.toString());
   }, []);
 
   async function logout() {
@@ -114,6 +128,10 @@ export default function ProfilePage() {
               </Link>
             </Button>
           )}
+          <ContactSupport
+            defaultName={data.user?.displayName ?? ''}
+            defaultEmail={data.user?.email ?? ''}
+          />
           {data.user ? (
             <Button variant="ghost" onClick={logout}>
               <LogOut className="size-4" />
@@ -126,6 +144,29 @@ export default function ProfilePage() {
           )}
         </div>
       </header>
+
+      {data.user?.isSuspicious && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm"
+        >
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-500" />
+          <div className="flex-1">
+            <p className="font-semibold text-amber-500">Замечена подозрительная активность</p>
+            <p className="mt-1 text-foreground/90">
+              С вашего IP ранее уже регистрировался аккаунт. Бонусные кредиты не начислены.
+              Если это ошибка — напишите в поддержку:{' '}
+              <a
+                href="mailto:makklavin@gmail.com"
+                className="font-semibold text-amber-500 underline"
+              >
+                makklavin@gmail.com
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="sm:col-span-2">
@@ -161,9 +202,6 @@ export default function ProfilePage() {
               Откликов сделано
             </p>
             <p className="font-display text-3xl font-bold">{data.generations.length}</p>
-            <p className="text-xs text-muted-foreground">
-              {data.transactions.filter((t) => t.status === 'succeeded').length} оплат
-            </p>
           </CardContent>
         </Card>
       </div>

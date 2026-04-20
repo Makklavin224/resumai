@@ -8,6 +8,8 @@ export interface AuthUser {
   email: string;
   displayName: string | null;
   isAdmin: boolean;
+  isBlocked?: boolean;
+  isSuspicious?: boolean;
 }
 
 async function getJson<T>(path: string, init?: RequestInit): Promise<T> {

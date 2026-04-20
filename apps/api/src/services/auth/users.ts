@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { randomBytes } from 'node:crypto';
 import { db } from '../../db/client.js';
-import { users, sessions } from '../../db/schema.js';
+import { users, sessions, signupBonusIps } from '../../db/schema.js';
 import type { User } from '../../db/schema.js';
 import { env } from '../../lib/env.js';
 import { hashPassword, verifyPassword } from './password.js';
@@ -76,6 +76,35 @@ export async function grantSignupBonus(sessionId: string, amount: number): Promi
 }
 
 /**
+ * Grant the signup bonus only if the caller's IP has never received it.
+ * Prevents the "sign up via email + VK + Telegram from the same device" farm.
+ * Returns whether the bonus was actually granted.
+ */
+export async function grantSignupBonusIfFirstIp(args: {
+  sessionId: string;
+  ipHash: string;
+  userId: string;
+  provider: 'email' | 'vk' | 'telegram';
+  amount: number;
+}): Promise<{ granted: boolean }> {
+  const inserted = await db
+    .insert(signupBonusIps)
+    .values({
+      ipHash: args.ipHash,
+      firstUserId: args.userId,
+      provider: args.provider,
+    })
+    .onConflictDoNothing()
+    .returning();
+  if (inserted.length === 0) {
+    // Same IP already claimed the bonus before.
+    return { granted: false };
+  }
+  await grantSignupBonus(args.sessionId, args.amount);
+  return { granted: true };
+}
+
+/**
  * Look up (provider, providerId) → user. Creates one if missing so OAuth
  * callers (VK, Telegram) can treat the call as upsert + "is this the first
  * login?" signal for the signup bonus.
@@ -89,13 +118,40 @@ export async function findOrCreateOAuthUser(input: {
   providerId: string;
   displayName?: string | null;
   email?: string | null;
+  phone?: string | null;
 }): Promise<{ user: User; created: boolean }> {
   const providerId = String(input.providerId);
-  const [existing] = await db
+  const normalizedPhone = input.phone?.replace(/[^\d+]/g, '') || null;
+
+  // Try (provider, providerId) first — fastest.
+  const [byProvider] = await db
     .select()
     .from(users)
     .where(and(eq(users.provider, input.provider), eq(users.providerId, providerId)));
-  if (existing) return { user: existing, created: false };
+  if (byProvider) {
+    // Opportunistically backfill phone if we have it and the row doesn't.
+    if (normalizedPhone && !byProvider.phone) {
+      await db.update(users).set({ phone: normalizedPhone }).where(eq(users.id, byProvider.id));
+    }
+    return { user: byProvider, created: false };
+  }
+
+  // Then by phone — lets VK+TG collide if they belong to one person.
+  if (normalizedPhone) {
+    const [byPhone] = await db.select().from(users).where(eq(users.phone, normalizedPhone));
+    if (byPhone) {
+      // Link this provider onto the existing user so future logins hit
+      // the provider branch above.
+      await db
+        .update(users)
+        .set({
+          provider: byPhone.provider ?? input.provider,
+          providerId: byPhone.providerId ?? providerId,
+        })
+        .where(eq(users.id, byPhone.id));
+      return { user: byPhone, created: false };
+    }
+  }
 
   const syntheticEmail =
     input.email?.trim().toLowerCase() ||
@@ -109,6 +165,7 @@ export async function findOrCreateOAuthUser(input: {
       displayName: input.displayName?.trim() || null,
       provider: input.provider,
       providerId,
+      phone: normalizedPhone,
       isAdmin: isSeedAdmin(syntheticEmail),
     })
     .returning();

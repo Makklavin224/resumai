@@ -22,7 +22,7 @@ function cookieOptions() {
 }
 
 /** Hash an IP with the cookie secret so we can dedupe without storing raw IPs. */
-function hashIp(ip: string): string {
+export function hashIp(ip: string): string {
   return createHash('sha256').update(`${env.COOKIE_SECRET}:${ip}`).digest('hex').slice(0, 32);
 }
 

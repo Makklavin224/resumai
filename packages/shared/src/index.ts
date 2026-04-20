@@ -11,13 +11,48 @@ export interface GenerateTextInput {
   vacancy: { type: 'url'; value: string } | { type: 'text'; value: string };
 }
 
+export type GapCategory =
+  | 'positioning'
+  | 'achievements'
+  | 'skills'
+  | 'industry'
+  | 'format'
+  | 'credibility'
+  | 'ats'
+  | 'risk'
+  | 'code_word';
+
+export type Priority = 'high' | 'medium' | 'low';
+export type ImpactLayer = 'ats' | 'recruiter' | 'hiring_manager';
+export type SignalType = 'must_have' | 'should_have' | 'nice_to_have';
+export type SignalLayer =
+  | 'hard_skill'
+  | 'tool'
+  | 'domain'
+  | 'metric'
+  | 'soft'
+  | 'credential'
+  | 'hidden';
+export type RiskSeverity = 'critical' | 'high' | 'medium';
+export type StrategyKey = 'safe' | 'bold' | 'stretch';
+
 export interface Gap {
   /** Short title of the missing skill / mismatch */
   title: string;
   /** 1–2 sentence explanation of why it matters */
   rationale: string;
-  /** Concrete suggested bullet to add to the resume */
+  /** Concrete suggested bullet to add to the resume (copy-paste ready) */
   suggestedBullet: string;
+  /** Semantic bucket for the gap. Added in prompts v3.0. */
+  category?: GapCategory;
+  /** Urgency of applying the fix. */
+  priority?: Priority;
+  /** Which reader layer this fix targets: ATS, recruiter skim, or hiring manager. */
+  impactLayer?: ImpactLayer;
+  /** Literal "before / after" text transformation the candidate should apply. */
+  beforeAfter?: { before: string; after: string };
+  /** Exact spot in the resume to apply the fix. */
+  howToApply?: string;
 }
 
 export interface Match {
@@ -27,6 +62,35 @@ export interface Match {
   detail: string;
   /** Relevance score 0-100 */
   score: number;
+  /** One phrase the candidate should drop into the first line of the response. */
+  howToHighlight?: string;
+  /** How to further strengthen this match in the resume. */
+  leverage?: string;
+}
+
+export interface Signal {
+  keyword: string;
+  type: SignalType;
+  layer: SignalLayer;
+  /** 0–100: how well the resume covers this signal. */
+  coverage: number;
+}
+
+export interface RejectionRisk {
+  risk: string;
+  severity: RiskSeverity;
+  mitigation: string;
+}
+
+export interface ResponseStrategy {
+  description: string;
+  interviewProbability: number;
+  whenToUse: string;
+}
+
+export interface InterviewProbability {
+  value: number;
+  explanation: string;
 }
 
 export interface GenerateResult {
@@ -41,6 +105,20 @@ export interface GenerateResult {
   model: string;
   tokensUsed: number;
   durationMs: number;
+  // ----- Prompts v3.0 enrichment. All optional so old cached results
+  // (Redis TTL 1h) and older model responses don't break the client. -----
+  profileSnapshot?: string;
+  recruiterInnerMonologue?: string;
+  targetPositioning?: string;
+  recruiterHook?: string;
+  codeWord?: string | null;
+  coverageScore?: number;
+  interviewProbability?: InterviewProbability;
+  signals?: Signal[];
+  redFlags?: string[];
+  greenFlags?: string[];
+  rejectionRisks?: RejectionRisk[];
+  responseStrategy?: Record<StrategyKey, ResponseStrategy>;
 }
 
 export interface CreditPackage {

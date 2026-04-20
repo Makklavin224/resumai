@@ -2,7 +2,16 @@
 
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Lock, Sparkles, Target } from 'lucide-react';
+import {
+  ArrowLeft,
+  Lock,
+  Sparkles,
+  Target,
+  AlertOctagon,
+  Compass,
+  Flag as FlagIcon,
+  Layers,
+} from 'lucide-react';
 import { motion } from 'motion/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,6 +19,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { RecommendationCard } from '@/components/results/recommendation-card';
 import { MatchRow } from '@/components/results/match-row';
 import { CoverLetter } from '@/components/results/cover-letter';
+import { RecruiterMonologue } from '@/components/results/recruiter-monologue';
+import { InterviewProbability as InterviewProbabilitySection } from '@/components/results/interview-probability';
+import { RisksList } from '@/components/results/risks-list';
+import { FlagsColumns } from '@/components/results/flags-columns';
+import { ResponseStrategySection } from '@/components/results/response-strategy';
+import { SignalsCoverage } from '@/components/results/signals-coverage';
 import { PaywallModal } from '@/components/paywall/paywall-modal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DEMO_RESULT } from '@/lib/demo';
@@ -50,8 +65,6 @@ export default function ResultPage({ params }: Props) {
     };
   }, [id]);
 
-  // After returning from YooKassa (?paid=1), re-fetch until credits update so
-  // the preview unlocks automatically.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const url = new URL(window.location.href);
@@ -74,23 +87,30 @@ export default function ResultPage({ params }: Props) {
   if (notFound || !result) return <ResultMissing id={id} />;
 
   const isLocked = result.kind === 'preview';
-  const visibleGaps = isLocked ? result.gaps.slice(0, 1) : result.gaps;
-  const hiddenGaps = isLocked ? Math.max(0, 3 - visibleGaps.length) : 0;
-  const visibleMatches = isLocked ? result.matches.slice(0, 1) : result.matches;
-  const hiddenMatches = isLocked ? Math.max(0, 3 - visibleMatches.length) : 0;
+  const visibleGaps = isLocked ? result.gaps.slice(0, 2) : result.gaps;
+  const hiddenGaps = isLocked ? Math.max(0, 8 - visibleGaps.length) : 0;
+  const visibleMatches = isLocked ? result.matches.slice(0, 2) : result.matches;
+  const hiddenMatches = isLocked ? Math.max(0, 6 - visibleMatches.length) : 0;
+
+  const interviewPercent = result.interviewProbability?.value;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between gap-3">
         <Button variant="ghost" asChild>
           <Link href="/">
             <ArrowLeft className="size-4" />
             Новый отклик
           </Link>
         </Button>
-        <Badge variant={isLocked ? 'muted' : 'success'}>
-          {isLocked ? 'Превью' : 'Полный результат'} · id: {id.slice(0, 8)}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {typeof interviewPercent === 'number' && !isLocked && (
+            <Badge variant="primary">Шанс интервью {interviewPercent}%</Badge>
+          )}
+          <Badge variant={isLocked ? 'muted' : 'success'}>
+            {isLocked ? 'Превью' : 'Полный результат'} · id: {id.slice(0, 8)}
+          </Badge>
+        </div>
       </div>
 
       <motion.header
@@ -102,10 +122,83 @@ export default function ResultPage({ params }: Props) {
         <h1 className="font-display text-3xl font-bold sm:text-4xl">Ваш отклик готов</h1>
         <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
           {isLocked
-            ? 'Мы показываем превью. Разблокируйте полный анализ, чтобы увидеть все рекомендации и письмо целиком.'
-            : 'Ниже — рекомендации по резюме, совпадения с вакансией и готовое сопроводительное. Копируйте или скачивайте.'}
+            ? 'Мы показываем превью. Разблокируйте полный анализ — 8+ рекомендаций, риски, 3 стратегии отклика, сигналы и письмо целиком.'
+            : 'Ниже — разбор от 4 персон: ATS, рекрутёра, нанимающего менеджера и карьерного стратега. Копируйте готовые формулировки в резюме.'}
         </p>
       </motion.header>
+
+      {result.profileSnapshot && (
+        <p className="mt-6 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground/90">
+          <span className="font-semibold">Вердикт рекрутёра: </span>
+          {result.profileSnapshot}
+        </p>
+      )}
+
+      {result.recruiterInnerMonologue && (
+        <section className="mt-6">
+          <RecruiterMonologue text={result.recruiterInnerMonologue} />
+        </section>
+      )}
+
+      <section className="mt-6 grid gap-4 lg:grid-cols-5">
+        {result.interviewProbability && (
+          <div className="lg:col-span-3">
+            <InterviewProbabilitySection data={result.interviewProbability} />
+          </div>
+        )}
+        {result.targetPositioning && (
+          <Card className="lg:col-span-2">
+            <CardContent className="space-y-2 p-5">
+              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
+                <Compass className="size-4" />
+                Как вам подавать себя
+              </p>
+              <p className="text-sm leading-relaxed">{result.targetPositioning}</p>
+            </CardContent>
+          </Card>
+        )}
+      </section>
+
+      {(result.redFlags?.length || result.greenFlags?.length) && (
+        <section className="mt-6">
+          <FlagsColumns redFlags={result.redFlags} greenFlags={result.greenFlags} />
+        </section>
+      )}
+
+      {result.rejectionRisks?.length ? (
+        <section className="mt-8">
+          <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-semibold">
+            <AlertOctagon className="size-5 text-destructive" />
+            Риски отказа · {result.rejectionRisks.length}
+          </h2>
+          <RisksList risks={result.rejectionRisks} />
+          {isLocked && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Показан 1 риск. В полном отчёте — все риски с планом закрытия.
+            </p>
+          )}
+        </section>
+      ) : null}
+
+      {result.responseStrategy && !isLocked && (
+        <section className="mt-8">
+          <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-semibold">
+            <FlagIcon className="size-5 text-primary" />
+            Три стратегии отклика
+          </h2>
+          <ResponseStrategySection strategies={result.responseStrategy} />
+        </section>
+      )}
+
+      {result.signals?.length && !isLocked ? (
+        <section className="mt-8">
+          <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-semibold">
+            <Layers className="size-5 text-primary" />
+            Сигналы вакансии · {result.signals.length}
+          </h2>
+          <SignalsCoverage signals={result.signals} />
+        </section>
+      ) : null}
 
       <section className="mt-8 grid gap-6 lg:grid-cols-5">
         <div className="space-y-4 lg:col-span-3">
@@ -118,7 +211,7 @@ export default function ResultPage({ params }: Props) {
           </div>
           <div className="space-y-3">
             {visibleGaps.map((gap, i) => (
-              <RecommendationCard key={gap.title} gap={gap} index={i} />
+              <RecommendationCard key={`${gap.title}-${i}`} gap={gap} index={i} />
             ))}
             {hiddenGaps > 0 && (
               <Card className="relative overflow-hidden">
@@ -128,7 +221,7 @@ export default function ResultPage({ params }: Props) {
                     <Lock className="size-5" />
                   </span>
                   <p className="text-sm font-medium">
-                    Ещё {hiddenGaps} {hiddenGaps === 1 ? 'рекомендация' : 'рекомендаций'} скрыто
+                    Ещё {hiddenGaps}+ рекомендаций скрыто
                   </p>
                   <PaywallModal
                     trigger={
@@ -154,14 +247,12 @@ export default function ResultPage({ params }: Props) {
           <Card>
             <CardContent className="p-4">
               <ul className="space-y-2">
-                {visibleMatches.map((m) => (
-                  <MatchRow key={m.title} match={m} />
+                {visibleMatches.map((m, i) => (
+                  <MatchRow key={`${m.title}-${i}`} match={m} />
                 ))}
                 {hiddenMatches > 0 && (
                   <li className="rounded-lg border border-dashed border-border bg-muted/20 p-3 text-center text-xs text-muted-foreground">
-                    Ещё {hiddenMatches}{' '}
-                    {hiddenMatches === 1 ? 'совпадение' : 'совпадений'} доступно после
-                    разблокировки
+                    Ещё {hiddenMatches}+ совпадений доступно после разблокировки
                   </li>
                 )}
               </ul>
@@ -190,9 +281,9 @@ export default function ResultPage({ params }: Props) {
                   <Sparkles className="size-5" />
                 </span>
                 <div>
-                  <p className="font-display text-base font-semibold">Разблокируйте полностью</p>
+                  <p className="font-display text-base font-semibold">Разблокируйте всё</p>
                   <p className="text-xs text-muted-foreground">
-                    Все рекомендации, совпадения и письмо целиком — за один клик
+                    8+ рекомендаций, стратегии отклика, карта сигналов, письмо целиком
                   </p>
                 </div>
               </div>

@@ -6,10 +6,54 @@ export const users = pgTable('users', {
   passwordHash: text('password_hash').notNull(),
   displayName: text('display_name'),
   isAdmin: boolean('is_admin').notNull().default(false),
+  /** Hard block: set by admin. Blocked users can sign in but can't spend
+   *  credits, buy packages, or generate. */
+  isBlocked: boolean('is_blocked').notNull().default(false),
+  /** Marked automatically when the user registered from an IP that already
+   *  claimed the signup bonus. The cabinet shows a warning banner. */
+  isSuspicious: boolean('is_suspicious').notNull().default(false),
   /** "vk" | "telegram" | null for email signups */
   provider: text('provider'),
   /** External id from the OAuth provider (vk user id, telegram user id). */
   providerId: text('provider_id'),
+  /** Phone number in E.164 format when we can obtain it (VK ID scope=phone).
+   *  Used for cross-provider deduplication. */
+  phone: text('phone'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * One row per IP hash that has already received the signup bonus. Stops a
+ * single human from farming N × SIGNUP_BONUS_CREDITS by registering via
+ * email + VK + Telegram separately.
+ */
+export const signupBonusIps = pgTable('signup_bonus_ips', {
+  ipHash: text('ip_hash').primaryKey(),
+  firstUserId: uuid('first_user_id'),
+  provider: text('provider'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Runtime-editable configuration: AI prompts (SYSTEM_ANALYST / SYSTEM_WRITER)
+ * and an optional OpenAI API key override. Anything missing here falls back
+ * to env / compile-time defaults so the app keeps working with an empty
+ * table.
+ */
+export const appSettings = pgTable('app_settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Free-text messages submitted via the cabinet "contact support" form. */
+export const supportMessages = pgTable('support_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  name: text('name').notNull(),
+  email: text('email').notNull(),
+  body: text('body').notNull(),
+  resolvedAt: timestamp('resolved_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -59,6 +103,9 @@ export const generations = pgTable('generations', {
   kind: text('kind').notNull(),
   model: text('model').notNull(),
   durationMs: integer('duration_ms').notNull(),
+  /** Full GenerateResult payload. Stored here so results survive Redis TTL
+   *  and profile history can render them later. */
+  resultJson: jsonb('result_json'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

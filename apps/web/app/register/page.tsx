@@ -17,11 +17,16 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!agreed) {
+      setError('Чтобы продолжить, подтвердите согласие с офертой и политикой конфиденциальности.');
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -106,17 +111,27 @@ export default function RegisterPage() {
 
             <SocialButtons mode="register" />
 
-            <p className="text-center text-xs text-muted-foreground">
-              Регистрируясь, вы соглашаетесь с{' '}
-              <Link href="/legal/terms" className="underline hover:text-foreground">
-                офертой
-              </Link>{' '}
-              и{' '}
-              <Link href="/legal/privacy" className="underline hover:text-foreground">
-                политикой конфиденциальности
-              </Link>
-              .
-            </p>
+            <label className="flex items-start gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                required
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 size-4 cursor-pointer rounded border-border accent-primary"
+              />
+              <span>
+                Я принимаю{' '}
+                <Link href="/legal/terms" className="underline hover:text-foreground">
+                  публичную оферту
+                </Link>{' '}
+                и{' '}
+                <Link href="/legal/privacy" className="underline hover:text-foreground">
+                  политику конфиденциальности
+                </Link>
+                , и даю согласие на обработку моих персональных данных в соответствии с указанной
+                политикой.
+              </span>
+            </label>
           </form>
         </CardContent>
       </Card>

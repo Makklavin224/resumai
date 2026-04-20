@@ -1,13 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import { SIGNUP_BONUS_CREDITS } from '@resumai/shared';
-import { ensureSession } from '../services/session/credits.js';
+import { ensureSession, hashIp } from '../services/session/credits.js';
 import {
   authenticate,
   createUser,
   findUserByEmail,
   findUserById,
-  grantSignupBonus,
+  grantSignupBonusIfFirstIp,
   linkSessionToUser,
 } from '../services/auth/users.js';
 
@@ -22,12 +22,21 @@ const LoginSchema = z.object({
   password: z.string().min(1).max(128),
 });
 
-function publicUser(u: { id: string; email: string; displayName: string | null; isAdmin: boolean }) {
+function publicUser(u: {
+  id: string;
+  email: string;
+  displayName: string | null;
+  isAdmin: boolean;
+  isBlocked?: boolean;
+  isSuspicious?: boolean;
+}) {
   return {
     id: u.id,
     email: u.email,
     displayName: u.displayName,
     isAdmin: u.isAdmin,
+    isBlocked: u.isBlocked ?? false,
+    isSuspicious: u.isSuspicious ?? false,
   };
 }
 
@@ -41,10 +50,31 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     const user = await createUser(body);
     const session = await ensureSession(req, reply);
     await linkSessionToUser(session.sessionId, user.id);
-    await grantSignupBonus(session.sessionId, SIGNUP_BONUS_CREDITS);
+    const { db } = await import('../db/client.js');
+    const { sessions, users: usersTable } = await import('../db/schema.js');
+    const { eq } = await import('drizzle-orm');
+    await db
+      .update(sessions)
+      .set({ credits: 0, updatedAt: new Date() })
+      .where(eq(sessions.id, session.sessionId));
+    const { granted } = await grantSignupBonusIfFirstIp({
+      sessionId: session.sessionId,
+      ipHash: hashIp(req.ip),
+      userId: user.id,
+      provider: 'email',
+      amount: SIGNUP_BONUS_CREDITS,
+    });
+    if (!granted) {
+      // Repeat signup from the same IP — no credits, mark the account
+      // suspicious so the cabinet can show a warning banner.
+      await db
+        .update(usersTable)
+        .set({ isSuspicious: true })
+        .where(eq(usersTable.id, user.id));
+    }
     return reply.status(201).send({
-      user: publicUser(user),
-      bonusCredits: SIGNUP_BONUS_CREDITS,
+      user: { ...publicUser(user), isSuspicious: !granted },
+      bonusCredits: granted ? SIGNUP_BONUS_CREDITS : 0,
     });
   });
 

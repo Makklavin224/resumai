@@ -28,7 +28,14 @@ export const profileRoutes: FastifyPluginAsync = async (app) => {
 
     return reply.send({
       user: user
-        ? { id: user.id, email: user.email, displayName: user.displayName, isAdmin: user.isAdmin }
+        ? {
+            id: user.id,
+            email: user.email,
+            displayName: user.displayName,
+            isAdmin: user.isAdmin,
+            isBlocked: user.isBlocked ?? false,
+            isSuspicious: user.isSuspicious ?? false,
+          }
         : null,
       credits: sessionRow.credits,
       generations: gens.map((g) => ({

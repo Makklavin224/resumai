@@ -1,18 +1,48 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Check, Gift, Sparkles } from 'lucide-react';
+import { Check, Gift } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/cn';
 import { formatRub, pluralRu } from '@/lib/format';
-import { CREDIT_PACKAGES, SIGNUP_BONUS_CREDITS } from '@resumai/shared';
+import {
+  CREDIT_PACKAGES,
+  SIGNUP_BONUS_CREDITS,
+  type CreditPackage,
+} from '@resumai/shared';
+import { BuyButton } from './buy-button';
 
-const PAID = CREDIT_PACKAGES.filter((p) => p.priceRub > 0);
+const DEFAULT_PAID = CREDIT_PACKAGES.filter((p) => p.priceRub > 0);
 
 export function PricingBlock() {
+  // Start from the compile-time constants so SSR renders meaningful content,
+  // then replace with effective (admin-overridden) packages once the client
+  // has fetched /api/config/pricing.
+  const [packages, setPackages] = useState<CreditPackage[]>(DEFAULT_PAID);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/config/pricing', { credentials: 'include' });
+        if (!res.ok) return;
+        const data = (await res.json()) as { packages: CreditPackage[] };
+        if (cancelled || !Array.isArray(data.packages)) return;
+        const paid = data.packages.filter((p) => p.priceRub > 0);
+        if (paid.length > 0) setPackages(paid);
+      } catch {
+        /* keep defaults */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const PAID = packages;
   return (
     <div>
       <motion.div
@@ -95,14 +125,12 @@ export function PricingBlock() {
                     )}
                   </ul>
 
-                  <Button
-                    asChild
-                    size="lg"
+                  <BuyButton
+                    packageId={p.id}
                     variant={p.popular ? 'primary' : 'outline'}
-                    className="w-full"
                   >
-                    <Link href="/register">Купить</Link>
-                  </Button>
+                    Купить
+                  </BuyButton>
                 </CardContent>
               </Card>
             </motion.div>

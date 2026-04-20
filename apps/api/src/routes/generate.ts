@@ -13,10 +13,62 @@ import {
 } from '../services/parser/hh-scraper.js';
 import { extractResumeDocument } from '../services/parser/pdf-extract.js';
 import { generateAdaptation } from '../services/ai/generator.js';
-import { storeResult, fetchResult } from '../services/cache/results.js';
+import { storeResult, fetchResult, unlockLatestResult } from '../services/cache/results.js';
 import { db } from '../db/client.js';
-import { errorLogs, generations, sessions as sessionsTable } from '../db/schema.js';
+import { errorLogs, generations, sessions as sessionsTable, users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+
+/**
+ * In-memory semaphore for concurrent AI generations. The proxy + OpenAI
+ * account have shared RPM/TPM limits, and PDF parsing blocks the event loop,
+ * so we never want more than ~30 generations flying at once per node. When
+ * the waiting queue is full we fail fast with 503 instead of piling up
+ * indefinite promises.
+ */
+const GEN_MAX_CONCURRENT = 30;
+const GEN_MAX_QUEUE = 60;
+let genActive = 0;
+const genQueue: Array<() => void> = [];
+
+async function withGenSlot<T>(fn: () => Promise<T>): Promise<T> {
+  if (genActive >= GEN_MAX_CONCURRENT) {
+    if (genQueue.length >= GEN_MAX_QUEUE) {
+      const err = new Error('Сервис перегружен — попробуйте через минуту') as Error & {
+        statusCode?: number;
+        code?: string;
+      };
+      err.statusCode = 503;
+      err.code = 'OVERLOADED';
+      throw err;
+    }
+    await new Promise<void>((resolve) => genQueue.push(resolve));
+  }
+  genActive++;
+  try {
+    return await fn();
+  } finally {
+    genActive--;
+    genQueue.shift()?.();
+  }
+}
+
+async function assertNotBlocked(sessionId: string) {
+  const [row] = await db
+    .select({ isBlocked: users.isBlocked })
+    .from(sessionsTable)
+    .leftJoin(users, eq(users.id, sessionsTable.userId))
+    .where(eq(sessionsTable.id, sessionId))
+    .limit(1);
+  if (row?.isBlocked) {
+    const err = new Error('Ваш аккаунт заблокирован — обратитесь в поддержку') as Error & {
+      statusCode?: number;
+      code?: string;
+    };
+    err.statusCode = 403;
+    err.code = 'BLOCKED';
+    throw err;
+  }
+}
 
 const TextPartSchema = z.object({
   type: z.literal('text'),
@@ -35,12 +87,22 @@ type ResumeKind = 'pdf' | 'text' | 'url';
 type VacancyKind = 'text' | 'url';
 
 function toPreview(full: GenerateResult): GenerateResult {
+  // v3.0 preview: more to show, more to tease. Keep the recruiter
+  // monologue and profile snapshot (high virality), 2 gaps + 2 matches,
+  // and exactly one rejection risk. Everything else stripped so the UI
+  // can show blur-teasers ("ещё 6 рисков скрыто…").
   return {
     ...full,
     kind: 'preview',
-    gaps: full.gaps.slice(0, 1),
-    matches: full.matches.slice(0, 1),
+    gaps: full.gaps.slice(0, 2),
+    matches: full.matches.slice(0, 2),
     coverLetter: full.previewCoverLetter,
+    rejectionRisks: full.rejectionRisks?.slice(0, 1),
+    // Wipe the strategy / flags / signals — keep the cost of unlock high.
+    responseStrategy: undefined,
+    redFlags: undefined,
+    greenFlags: undefined,
+    signals: undefined,
   };
 }
 
@@ -188,6 +250,7 @@ export const generateRoutes: FastifyPluginAsync = async (app) => {
     async (req: FastifyRequest, reply: FastifyReply) => {
       const session = await ensureSession(req, reply);
       try {
+        await assertNotBlocked(session.sessionId);
         const isMultipart = (req.headers['content-type'] ?? '').startsWith('multipart/');
         const payload = isMultipart
           ? await (async () => {
@@ -200,11 +263,13 @@ export const generateRoutes: FastifyPluginAsync = async (app) => {
             })()
           : await loadFromJson(req);
 
-        const result = await generateAdaptation({
-          resume: payload.resume,
-          vacancy: payload.vacancy,
-          credits: session.credits,
-        });
+        const result = await withGenSlot(() =>
+          generateAdaptation({
+            resume: payload.resume,
+            vacancy: payload.vacancy,
+            credits: session.credits,
+          }),
+        );
 
         if (result.kind === 'full' && session.credits > 0) {
           result.creditsRemaining = await deductCredit(session.sessionId);
@@ -226,6 +291,7 @@ export const generateRoutes: FastifyPluginAsync = async (app) => {
             vacancyCompany: payload.vacancy.company,
             resumeTitle: payload.resume.title ?? null,
             kind: result.kind,
+            resultJson: result as never,
             model: result.model,
             durationMs: result.durationMs,
           })
@@ -247,6 +313,14 @@ export const generateRoutes: FastifyPluginAsync = async (app) => {
 
   app.get<{ Params: { id: string } }>('/api/result/:id', async (req, reply) => {
     const session = await ensureSession(req, reply);
+    // "__LATEST__" is the placeholder YooKassa-return_url carries back to
+    // the user after payment. Resolve it to the session's most recent
+    // result so the cabinet shows something meaningful instead of 404.
+    if (req.params.id === '__LATEST__') {
+      const latest = await unlockLatestResult(session.sessionId);
+      if (!latest) return reply.status(404).send({ error: 'not found', code: 'INTERNAL' });
+      return reply.send(latest);
+    }
     const result = await fetchResult(session.sessionId, req.params.id);
     if (!result) return reply.status(404).send({ error: 'not found', code: 'INTERNAL' });
     return reply.send(result.kind === 'full' ? result : toPreview(result));

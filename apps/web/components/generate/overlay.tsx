@@ -3,6 +3,7 @@
 import { motion } from 'motion/react';
 import { Lightbulb } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { GenerateSteps } from './steps';
 import type { GenerateStep } from '@resumai/shared';
 
@@ -12,10 +13,18 @@ const TIPS = [
   'Фраза «готов учиться» работает против — HR читает её как «у меня нет опыта».',
 ];
 
+/**
+ * Fullscreen progress overlay. Rendered via React Portal directly into
+ * document.body so it escapes any parent stacking context (hero sections,
+ * sticky nav, framer-motion wrappers) and always covers every other block.
+ */
 export function GenerateOverlay({ step }: { step: GenerateStep }) {
+  const [mounted, setMounted] = useState(false);
   const [tip, setTip] = useState(TIPS[0]!);
-  // Lock body scroll so the page beneath can't bleed into view while the
-  // modal is open.
+
+  useEffect(() => setMounted(true), []);
+
+  // Lock body scroll so the page beneath can't bleed into view.
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -23,6 +32,7 @@ export function GenerateOverlay({ step }: { step: GenerateStep }) {
       document.body.style.overflow = prev;
     };
   }, []);
+
   useEffect(() => {
     const id = setInterval(() => {
       setTip((prev) => {
@@ -33,9 +43,14 @@ export function GenerateOverlay({ step }: { step: GenerateStep }) {
     return () => clearInterval(id);
   }, []);
 
-  return (
+  if (!mounted) return null;
+
+  const node = (
     <motion.div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-2xl p-4"
+      // Max z-index to guarantee we're above every sticky header, paywall,
+      // toaster, or portal in the app. Inline style wins over Tailwind.
+      style={{ zIndex: 2147483647 }}
+      className="fixed inset-0 flex items-center justify-center bg-background/95 backdrop-blur-2xl p-4"
       role="dialog"
       aria-modal="true"
       aria-label="Генерация отклика"
@@ -74,4 +89,6 @@ export function GenerateOverlay({ step }: { step: GenerateStep }) {
       </motion.div>
     </motion.div>
   );
+
+  return createPortal(node, document.body);
 }

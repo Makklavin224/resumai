@@ -1,14 +1,18 @@
 {
-	email admin@resumai.ru
+	email admin@resumai.pro
 }
 
-:80 {
+# Main site. RESUMAI_DOMAIN is substituted from the env (compose.yml injects it
+# into the caddy container). With a real hostname here Caddy auto-issues and
+# renews a Let's Encrypt cert.
+{$RESUMAI_DOMAIN} {
 	encode zstd gzip
 	header {
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
 		Referrer-Policy "strict-origin-when-cross-origin"
-		Content-Security-Policy "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; connect-src 'self' https://api.yookassa.ru; frame-src https://yookassa.ru https://yoomoney.ru;"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Content-Security-Policy "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://telegram.org https://oauth.telegram.org; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; connect-src 'self' https://api.yookassa.ru https://oauth.telegram.org; frame-src https://yookassa.ru https://yoomoney.ru https://oauth.telegram.org;"
 		-Server
 	}
 
@@ -24,4 +28,9 @@
 		format json
 		output stdout
 	}
+}
+
+# Redirect www.<domain> → apex (no-op if the A record doesn't exist yet).
+www.{$RESUMAI_DOMAIN} {
+	redir https://{$RESUMAI_DOMAIN}{uri} permanent
 }

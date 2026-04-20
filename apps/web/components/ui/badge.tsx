@@ -12,6 +12,7 @@ const badgeVariants = cva(
         accentSoft: 'bg-accent/18 text-accent-foreground',
         success: 'bg-[color:var(--success)]/15 text-[color:var(--success)]',
         muted: 'bg-muted text-muted-foreground',
+        destructive: 'bg-destructive/15 text-destructive',
         outline: 'border border-border text-foreground',
       },
     },
