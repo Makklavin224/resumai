@@ -1,4 +1,4 @@
-import type { CreditPackage } from './types.js';
+import type { CreditPackage } from './types';
 
 export const CREDIT_PACKAGES: readonly CreditPackage[] = [
   { id: 'trial', label: 'Пробный', credits: 1, priceRub: 0 },
