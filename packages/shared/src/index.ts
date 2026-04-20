@@ -109,7 +109,7 @@ export const CREDIT_PACKAGES: readonly CreditPackage[] = [
 ] as const;
 
 /** One-time bonus granted when a user first signs up. */
-export const SIGNUP_BONUS_CREDITS = 2;
+export const SIGNUP_BONUS_CREDITS = 3;
 
 export const LIMITS = {
   resumeTextMin: 200,

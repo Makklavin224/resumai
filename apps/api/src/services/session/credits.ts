@@ -41,24 +41,15 @@ export async function ensureSession(
     }
   }
 
-  // Brand-new session. Grant the free trial credit only if this IP hasn't
-  // already consumed one (stops incognito / cookie-wipe abuse).
+  // Anonymous sessions start with 0 credits — the offer is now "3 free
+  // after signup". The ip_trial row keeps a breadcrumb for future anti-abuse.
   const ipHash = hashIp(req.ip);
-  const [priorTrial] = await db
-    .select()
-    .from(anonTrialIps)
-    .where(eq(anonTrialIps.ipHash, ipHash));
-  const initialCredits = priorTrial ? 0 : 1;
-
-  const [row] = await db.insert(sessions).values({ credits: initialCredits }).returning();
+  const [row] = await db.insert(sessions).values({ credits: 0 }).returning();
   if (!row) throw new Error('failed to create session');
-
-  if (!priorTrial) {
-    await db
-      .insert(anonTrialIps)
-      .values({ ipHash, firstSessionId: row.id })
-      .onConflictDoNothing();
-  }
+  await db
+    .insert(anonTrialIps)
+    .values({ ipHash, firstSessionId: row.id })
+    .onConflictDoNothing();
 
   reply.setCookie(SESSION_COOKIE, row.id, cookieOptions());
   return { sessionId: row.id, credits: row.credits };

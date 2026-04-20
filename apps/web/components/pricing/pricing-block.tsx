@@ -27,10 +27,8 @@ export function PricingBlock() {
         </h2>
         <div className="mx-auto mt-4 flex flex-wrap items-center justify-center gap-3 text-sm">
           <Badge variant="success" className="gap-1.5 px-3 py-1">
-            <Gift className="size-3.5" />1 отклик бесплатно
-          </Badge>
-          <Badge variant="primary" className="gap-1.5 px-3 py-1">
-            <Sparkles className="size-3.5" />+{SIGNUP_BONUS_CREDITS} бонусных за регистрацию
+            <Gift className="size-3.5" />
+            {SIGNUP_BONUS_CREDITS} бесплатных отклика после регистрации
           </Badge>
         </div>
       </motion.div>

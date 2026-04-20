@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { emitAuthChanged, onAuthChanged } from './auth-events';
 
 export interface AuthUser {
   id: string;
@@ -28,17 +29,30 @@ async function getJson<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const authApi = {
   me: () => getJson<{ user: AuthUser | null }>('/api/auth/me'),
-  login: (email: string, password: string) =>
-    getJson<{ user: AuthUser }>('/api/auth/login', {
+  login: async (email: string, password: string) => {
+    const res = await getJson<{ user: AuthUser }>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
-    }),
-  register: (email: string, password: string, displayName?: string) =>
-    getJson<{ user: AuthUser }>('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, displayName }),
-    }),
-  logout: () => getJson<{ ok: true }>('/api/auth/logout', { method: 'POST' }),
+    });
+    emitAuthChanged();
+    return res;
+  },
+  register: async (email: string, password: string, displayName?: string) => {
+    const res = await getJson<{ user: AuthUser; bonusCredits?: number }>(
+      '/api/auth/register',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, password, displayName }),
+      },
+    );
+    emitAuthChanged();
+    return res;
+  },
+  logout: async () => {
+    const res = await getJson<{ ok: true }>('/api/auth/logout', { method: 'POST' });
+    emitAuthChanged();
+    return res;
+  },
 };
 
 export function useAuth() {
@@ -58,6 +72,7 @@ export function useAuth() {
 
   useEffect(() => {
     refresh();
+    return onAuthChanged(refresh);
   }, [refresh]);
 
   return { user, loading, refresh, setUser };

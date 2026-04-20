@@ -4,23 +4,19 @@ import { animate, useInView, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 
 interface Props {
-  /** Target number to count up to */
   to: number;
-  /** Decimal places (e.g. 11.4 → 1). 0 for integers. */
   decimals?: number;
-  /** Suffix after the number (e.g. "%", " сек") */
   suffix?: string;
-  /** Seed value — what's displayed before inView fires. Defaults to 0. */
   from?: number;
-  /** Duration in seconds. Default 1.6. */
   duration?: number;
-  /** Class name on the span */
   className?: string;
+  /** Start the moment the component mounts instead of waiting for scroll */
+  immediate?: boolean;
 }
 
 /**
  * Counts the number up from `from` to `to` the first time the element is
- * visible. Respects prefers-reduced-motion — skips straight to the target.
+ * visible (or immediately if `immediate`). Respects prefers-reduced-motion.
  */
 export function CountUp({
   to,
@@ -29,14 +25,18 @@ export function CountUp({
   from = 0,
   duration = 1.6,
   className,
+  immediate,
 }: Props) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-20% 0px' });
+  // amount 0.1 triggers as soon as 10% of the element is visible — makes the
+  // hero stat-strip fire on first paint instead of waiting for the user to
+  // nudge-scroll.
+  const inView = useInView(ref, { once: true, amount: 0.1 });
   const reduced = useReducedMotion();
   const [value, setValue] = useState(from);
 
   useEffect(() => {
-    if (!inView) return;
+    if (!immediate && !inView) return;
     if (reduced) {
       setValue(to);
       return;
@@ -47,7 +47,7 @@ export function CountUp({
       onUpdate: (v) => setValue(v),
     });
     return () => controls.stop();
-  }, [inView, reduced, from, to, duration]);
+  }, [immediate, inView, reduced, from, to, duration]);
 
   return (
     <span ref={ref} className={className}>

@@ -110,9 +110,9 @@ export default function LandingPage() {
             <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-3">
               <MagneticButton>
                 <Button size="lg" asChild>
-                  <Link href="#adapt">
+                  <Link href="/register">
                     <Sparkles className="size-4" />
-                    Попробовать бесплатно
+                    Получить 3 отклика
                   </Link>
                 </Button>
               </MagneticButton>
@@ -121,7 +121,7 @@ export default function LandingPage() {
               </Button>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
-              Попробуйте прямо сейчас — 1 отклик бесплатно, ещё +2 сразу после регистрации
+              30 секунд на регистрацию — 3 бесплатных отклика сразу на счёт
             </p>
           </div>
 

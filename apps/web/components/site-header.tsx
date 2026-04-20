@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-import { LogIn, Moon, Sun, SparklesIcon, UserCircle2 } from 'lucide-react';
+import { Home, LogIn, Moon, Sun, SparklesIcon, UserCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-client';
+import { MagneticLogo } from '@/components/motion/magnetic-logo';
 
 export function SiteHeader() {
   const { theme, setTheme } = useTheme();
@@ -17,22 +18,31 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
-          <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-glow-primary)]">
-            <SparklesIcon className="size-5" strokeWidth={2.5} />
-          </span>
-          <span className="font-display text-xl">ResumAI</span>
-        </Link>
+        <MagneticLogo>
+          <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
+            <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-glow-primary)]">
+              <SparklesIcon className="size-5" strokeWidth={2.5} />
+            </span>
+            <span className="font-display text-xl">ResumAI</span>
+          </Link>
+        </MagneticLogo>
         <nav className="flex items-center gap-2 text-sm">
           <Link
+            href="/"
+            className="hidden items-center gap-1.5 rounded-md px-3 py-2 text-muted-foreground transition hover:text-foreground sm:inline-flex"
+          >
+            <Home className="size-4" />
+            Главная
+          </Link>
+          <Link
             href="/#how-it-works"
-            className="hidden rounded-md px-3 py-2 text-muted-foreground transition hover:text-foreground sm:inline-flex"
+            className="hidden rounded-md px-3 py-2 text-muted-foreground transition hover:text-foreground md:inline-flex"
           >
             Как работает
           </Link>
           <Link
             href="/#pricing"
-            className="hidden rounded-md px-3 py-2 text-muted-foreground transition hover:text-foreground sm:inline-flex"
+            className="hidden rounded-md px-3 py-2 text-muted-foreground transition hover:text-foreground md:inline-flex"
           >
             Цены
           </Link>

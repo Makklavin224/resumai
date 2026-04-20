@@ -99,7 +99,13 @@ export default function ProfilePage() {
             {data.user?.email ?? 'Анонимная сессия — зарегистрируйтесь, чтобы сохранить историю'}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button asChild>
+            <Link href="/#adapt">
+              <Sparkles className="size-4" />
+              Новый отклик
+            </Link>
+          </Button>
           {data.user?.isAdmin && (
             <Button variant="outline" asChild>
               <Link href="/admin">
