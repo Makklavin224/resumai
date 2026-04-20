@@ -9,8 +9,11 @@ export function getRedis(): Redis {
   if (!client) {
     client = new Redis(env.REDIS_URL, {
       lazyConnect: false,
-      maxRetriesPerRequest: 2,
-      enableOfflineQueue: false,
+      maxRetriesPerRequest: 3,
+      // Queue commands while the initial connection is establishing so
+      // an early request doesn't race with the TCP handshake.
+      enableOfflineQueue: true,
+      connectTimeout: 5_000,
     });
     client.on('error', (err) => logger.warn({ err }, 'redis error'));
   }
