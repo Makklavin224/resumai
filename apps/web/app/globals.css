@@ -2,56 +2,67 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Signature palette — Teal × Apricot
+ * ---------------------------------
+ * Most RU SaaS defaults to indigo / cornflower blue. We move 185° away on
+ * the hue wheel (deep teal) and pair it with a warm apricot accent — a
+ * complementary peach that signals urgency without shouting. Reads
+ * "premium-but-human" next to hh.ru's red, superjob's orange, and the
+ * sea of purple AI tools. Keeps 4.5:1 contrast against cream surfaces.
+ */
+
 :root {
-  /* Base surfaces */
-  --background: oklch(99% 0 0);
-  --foreground: oklch(18% 0.03 260);
-  --muted: oklch(96% 0.01 260);
-  --muted-foreground: oklch(48% 0.02 260);
-  --card: oklch(100% 0 0);
-  --card-foreground: oklch(18% 0.03 260);
-  --popover: oklch(100% 0 0);
-  --popover-foreground: oklch(18% 0.03 260);
-  --border: oklch(92% 0.01 260);
-  --input: oklch(96% 0.005 260);
-  --ring: oklch(56% 0.22 270);
+  /* Warm cream surfaces so the product doesn't look sterile */
+  --background: oklch(98.5% 0.008 90);
+  --foreground: oklch(17% 0.03 220);
+  --muted: oklch(95% 0.012 90);
+  --muted-foreground: oklch(46% 0.02 220);
+  --card: oklch(100% 0.004 90);
+  --card-foreground: oklch(17% 0.03 220);
+  --popover: oklch(100% 0.004 90);
+  --popover-foreground: oklch(17% 0.03 220);
+  --border: oklch(91% 0.015 90);
+  --input: oklch(96% 0.01 90);
+  --ring: oklch(55% 0.13 185);
 
   /* Semantic */
-  --primary: oklch(56% 0.22 270); /* indigo-600 */
-  --primary-foreground: oklch(99% 0 0);
-  --accent: oklch(74% 0.16 70); /* amber-500 */
-  --accent-foreground: oklch(22% 0.05 60);
-  --secondary: oklch(96% 0.01 260);
-  --secondary-foreground: oklch(22% 0.04 260);
+  --primary: oklch(52% 0.13 185); /* teal-600 */
+  --primary-foreground: oklch(99% 0.005 90);
+  --accent: oklch(76% 0.17 55); /* apricot-400 */
+  --accent-foreground: oklch(23% 0.07 40);
+  --secondary: oklch(95% 0.012 90);
+  --secondary-foreground: oklch(22% 0.04 220);
   --destructive: oklch(58% 0.22 26);
-  --destructive-foreground: oklch(99% 0 0);
-  --success: oklch(62% 0.17 160);
+  --destructive-foreground: oklch(99% 0.005 90);
+  --success: oklch(60% 0.17 150); /* emerald kept distinct from primary */
 
   --radius: 0.875rem;
 }
 
 .dark {
-  --background: oklch(15% 0.02 260);
-  --foreground: oklch(96% 0.01 260);
-  --muted: oklch(22% 0.02 260);
-  --muted-foreground: oklch(70% 0.02 260);
-  --card: oklch(19% 0.025 260);
-  --card-foreground: oklch(96% 0.01 260);
-  --popover: oklch(19% 0.025 260);
-  --popover-foreground: oklch(96% 0.01 260);
-  --border: oklch(28% 0.02 260);
-  --input: oklch(24% 0.02 260);
-  --ring: oklch(68% 0.2 270);
+  /* Deep teal-tinted ink rather than cold slate */
+  --background: oklch(14% 0.03 200);
+  --foreground: oklch(96% 0.01 90);
+  --muted: oklch(21% 0.03 200);
+  --muted-foreground: oklch(72% 0.02 200);
+  --card: oklch(18% 0.035 200);
+  --card-foreground: oklch(96% 0.01 90);
+  --popover: oklch(18% 0.035 200);
+  --popover-foreground: oklch(96% 0.01 90);
+  --border: oklch(28% 0.03 200);
+  --input: oklch(23% 0.03 200);
+  --ring: oklch(70% 0.13 185);
 
-  --primary: oklch(68% 0.2 270);
-  --primary-foreground: oklch(15% 0.02 260);
-  --accent: oklch(78% 0.15 70);
-  --accent-foreground: oklch(15% 0.02 260);
-  --secondary: oklch(22% 0.02 260);
-  --secondary-foreground: oklch(96% 0.01 260);
+  --primary: oklch(70% 0.13 185);
+  --primary-foreground: oklch(14% 0.03 200);
+  --accent: oklch(80% 0.15 55);
+  --accent-foreground: oklch(18% 0.05 40);
+  --secondary: oklch(21% 0.03 200);
+  --secondary-foreground: oklch(96% 0.01 90);
   --destructive: oklch(66% 0.22 26);
-  --destructive-foreground: oklch(99% 0 0);
-  --success: oklch(72% 0.17 160);
+  --destructive-foreground: oklch(99% 0.005 90);
+  --success: oklch(72% 0.17 150);
 }
 
 @theme inline {
@@ -86,9 +97,10 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 10px);
 
-  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 12px rgba(15, 23, 42, 0.04);
-  --shadow-elevated: 0 12px 32px -12px rgba(15, 23, 42, 0.18);
-  --shadow-glow-primary: 0 18px 40px -16px rgba(79, 70, 229, 0.55);
+  --shadow-soft: 0 1px 2px rgba(17, 52, 52, 0.05), 0 2px 12px rgba(17, 52, 52, 0.05);
+  --shadow-elevated: 0 12px 32px -12px rgba(17, 52, 52, 0.2);
+  /* Teal glow, picks up apricot hint on hover */
+  --shadow-glow-primary: 0 18px 40px -16px rgba(13, 118, 110, 0.55);
 }
 
 @layer base {
@@ -136,7 +148,7 @@
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--primary) 22%, transparent);
+    background: color-mix(in oklab, var(--accent) 30%, transparent);
     color: inherit;
   }
 }
@@ -145,7 +157,7 @@
   .gradient-mesh {
     background-image:
       radial-gradient(at 12% 8%, color-mix(in oklab, var(--primary) 22%, transparent) 0px, transparent 55%),
-      radial-gradient(at 85% 10%, color-mix(in oklab, var(--accent) 28%, transparent) 0px, transparent 55%),
+      radial-gradient(at 85% 10%, color-mix(in oklab, var(--accent) 32%, transparent) 0px, transparent 55%),
       radial-gradient(at 65% 90%, color-mix(in oklab, var(--primary) 18%, transparent) 0px, transparent 50%);
   }
 
