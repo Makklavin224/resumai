@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { authApi } from '@/lib/auth-client';
+import { SocialButtons } from '@/components/auth/social-buttons';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md px-4 py-16 sm:px-6 sm:py-24">
       <Card>
-        <CardContent className="space-y-6 p-8">
+        <CardContent className="space-y-5 p-8">
           <header className="space-y-1 text-center">
             <h1 className="font-display text-3xl font-bold">Вход</h1>
             <p className="text-sm text-muted-foreground">
@@ -47,6 +48,17 @@ export default function LoginPage() {
               </Link>
             </p>
           </header>
+
+          <SocialButtons mode="login" />
+
+          <div className="relative my-1">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase tracking-wider">
+              <span className="bg-card px-3 text-muted-foreground">или через email</span>
+            </div>
+          </div>
 
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-1.5">
