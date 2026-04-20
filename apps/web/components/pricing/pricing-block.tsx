@@ -1,148 +1,115 @@
 'use client';
 
 import Link from 'next/link';
-import { Check, Sparkles } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Check, Gift, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/cn';
 import { formatRub, pluralRu } from '@/lib/format';
-import { CREDIT_PACKAGES } from '@resumai/shared';
-
-interface Tier {
-  id: string;
-  label: string;
-  credits: number;
-  priceRub: number;
-  hint: string;
-  badge?: string;
-  popular?: boolean;
-  features: string[];
-}
+import { CREDIT_PACKAGES, SIGNUP_BONUS_CREDITS } from '@resumai/shared';
 
 const PAID = CREDIT_PACKAGES.filter((p) => p.priceRub > 0);
-const SINGLE = PAID.find((p) => p.id === 'pack_10');
-const BULK = PAID.find((p) => p.id === 'pack_25');
-
-const TIERS: Tier[] = [
-  {
-    id: 'trial',
-    label: 'Триал',
-    credits: 1,
-    priceRub: 0,
-    hint: 'Для первого отклика',
-    features: [
-      'Адаптация 1 резюме под 1 вакансию',
-      'Полный отчёт: 3 правки + 3 совпадения',
-      'Персональное сопроводительное',
-      'Без регистрации',
-    ],
-  },
-  {
-    id: SINGLE?.id ?? 'pack_10',
-    label: SINGLE?.label ?? 'Стандарт',
-    credits: SINGLE?.credits ?? 10,
-    priceRub: SINGLE?.priceRub ?? 490,
-    hint: '49 ₽ за отклик',
-    badge: 'ХИТ',
-    popular: true,
-    features: [
-      '10 адаптаций резюме под разные вакансии',
-      'PDF, DOCX и ссылки hh.ru',
-      'История откликов в профиле',
-      'Экспорт в .txt и копирование',
-    ],
-  },
-  {
-    id: BULK?.id ?? 'pack_25',
-    label: BULK?.label ?? 'Профи',
-    credits: BULK?.credits ?? 25,
-    priceRub: BULK?.priceRub ?? 990,
-    hint: '39 ₽ за отклик',
-    features: [
-      '25 адаптаций — хватит на месяц активного поиска',
-      'Всё из «Стандарт»',
-      'Приоритетная поддержка в чате',
-      'Советы по прохождению интервью',
-    ],
-  },
-];
 
 export function PricingBlock() {
   return (
     <div>
-      <div className="mb-10 text-center">
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary">Цены</p>
-        <h2 className="font-display mt-2 text-3xl font-bold sm:text-4xl">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-80px' }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="mb-10 text-center"
+      >
+        <h2 className="font-display text-3xl font-bold sm:text-4xl">
           Платите за отклики, а не за подписки
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-          Без автосписаний и скрытых тарифов. Кредиты не сгорают, пока есть сессия. Оплата через
-          YooKassa — VISA, МИР, СБП, Mastercard.
-        </p>
-      </div>
+        <div className="mx-auto mt-4 flex flex-wrap items-center justify-center gap-3 text-sm">
+          <Badge variant="success" className="gap-1.5 px-3 py-1">
+            <Gift className="size-3.5" />1 отклик бесплатно
+          </Badge>
+          <Badge variant="primary" className="gap-1.5 px-3 py-1">
+            <Sparkles className="size-3.5" />+{SIGNUP_BONUS_CREDITS} бонусных за регистрацию
+          </Badge>
+        </div>
+      </motion.div>
 
-      <div className="grid gap-5 md:grid-cols-3">
-        {TIERS.map((t) => (
-          <Card
-            key={t.id}
-            className={cn(
-              'relative overflow-hidden',
-              t.popular && 'border-primary ring-1 ring-primary/30 shadow-[var(--shadow-glow-primary)]',
-            )}
-          >
-            {t.badge && (
-              <Badge
-                variant="accent"
-                className="absolute left-1/2 top-0 -translate-x-1/2 translate-y-[-50%]"
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {PAID.map((p, i) => {
+          const perCredit = Math.round((p.priceRub / p.credits) * 10) / 10;
+          return (
+            <motion.div
+              key={p.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ delay: i * 0.06, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <Card
+                className={cn(
+                  'relative h-full overflow-visible',
+                  p.popular &&
+                    'border-primary shadow-[var(--shadow-glow-primary)] ring-1 ring-primary/30',
+                )}
               >
-                {t.badge}
-              </Badge>
-            )}
-            <CardContent className="flex flex-col gap-5 p-7">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {t.label}
-                </p>
-                <div className="mt-3 flex items-baseline gap-2">
-                  <span className="font-display text-4xl font-bold">
-                    {t.priceRub === 0 ? 'Бесплатно' : formatRub(t.priceRub)}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {t.credits} {pluralRu(t.credits, ['отклик', 'отклика', 'откликов'])} · {t.hint}
-                </p>
-              </div>
+                {p.badge && (
+                  <Badge
+                    variant="accent"
+                    className="absolute left-1/2 top-0 -translate-x-1/2 translate-y-[-50%]"
+                  >
+                    {p.badge}
+                  </Badge>
+                )}
+                <CardContent className="flex h-full flex-col gap-5 p-6">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {p.label}
+                    </p>
+                    <p className="mt-2 font-display text-3xl font-bold sm:text-4xl">
+                      {formatRub(p.priceRub)}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {p.credits}{' '}
+                      {pluralRu(p.credits, ['отклик', 'отклика', 'откликов'])} · от{' '}
+                      {formatRub(perCredit)} за отклик
+                    </p>
+                  </div>
 
-              <ul className="space-y-2.5">
-                {t.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm">
-                    <Check className="mt-0.5 size-4 shrink-0 text-[color:var(--success)]" />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
+                  <ul className="flex-1 space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <Check className="mt-0.5 size-4 shrink-0 text-[color:var(--success)]" />
+                      <span>Полный отчёт: 3 правки + 3 совпадения</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="mt-0.5 size-4 shrink-0 text-[color:var(--success)]" />
+                      <span>Сопроводительное под каждую вакансию</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="mt-0.5 size-4 shrink-0 text-[color:var(--success)]" />
+                      <span>История в профиле и экспорт в .txt</span>
+                    </li>
+                    {p.credits >= 50 && (
+                      <li className="flex items-start gap-2">
+                        <Check className="mt-0.5 size-4 shrink-0 text-[color:var(--success)]" />
+                        <span>Приоритетная поддержка в чате</span>
+                      </li>
+                    )}
+                  </ul>
 
-              <Button
-                asChild
-                size="lg"
-                variant={t.popular ? 'primary' : 'outline'}
-                className="w-full"
-              >
-                <Link href="#adapt">
-                  {t.priceRub === 0 ? (
-                    <>
-                      <Sparkles className="size-4" />
-                      Попробовать сейчас
-                    </>
-                  ) : (
-                    'Выбрать тариф'
-                  )}
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+                  <Button
+                    asChild
+                    size="lg"
+                    variant={p.popular ? 'primary' : 'outline'}
+                    className="w-full"
+                  >
+                    <Link href="#adapt">Докупить {p.credits}</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
 
       <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-muted-foreground">
@@ -154,7 +121,7 @@ export function PricingBlock() {
         <Link href="/legal/privacy" className="underline hover:text-foreground">
           политику конфиденциальности
         </Link>
-        . Чек приходит на вашу почту. Возврат — по статье 32 Закона «О защите прав потребителей».
+        .
       </p>
     </div>
   );

@@ -1,11 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
+import { SIGNUP_BONUS_CREDITS } from '@resumai/shared';
 import { ensureSession } from '../services/session/credits.js';
 import {
   authenticate,
   createUser,
   findUserByEmail,
   findUserById,
+  grantSignupBonus,
   linkSessionToUser,
 } from '../services/auth/users.js';
 
@@ -39,7 +41,11 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     const user = await createUser(body);
     const session = await ensureSession(req, reply);
     await linkSessionToUser(session.sessionId, user.id);
-    return reply.status(201).send({ user: publicUser(user) });
+    await grantSignupBonus(session.sessionId, SIGNUP_BONUS_CREDITS);
+    return reply.status(201).send({
+      user: publicUser(user),
+      bonusCredits: SIGNUP_BONUS_CREDITS,
+    });
   });
 
   app.post('/api/auth/login', async (req, reply) => {

@@ -58,3 +58,18 @@ export async function linkSessionToUser(sessionId: string, userId: string): Prom
     .set({ userId, updatedAt: new Date() })
     .where(eq(sessions.id, sessionId));
 }
+
+/**
+ * Grant signup bonus to the caller's current session. Called once right after
+ * successful registration. The bonus is additive to whatever the anonymous
+ * session already had (typically the 1 free trial credit), so a fresh visitor
+ * who registers ends up with 1 + SIGNUP_BONUS = 3 credits total.
+ */
+export async function grantSignupBonus(sessionId: string, amount: number): Promise<void> {
+  const [row] = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+  if (!row) return;
+  await db
+    .update(sessions)
+    .set({ credits: row.credits + amount, updatedAt: new Date() })
+    .where(eq(sessions.id, sessionId));
+}

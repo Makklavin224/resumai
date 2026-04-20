@@ -94,10 +94,22 @@ export interface ApiError {
 // ========================= Constants ==========================
 
 export const CREDIT_PACKAGES: readonly CreditPackage[] = [
-  { id: 'trial', label: 'Пробный', credits: 1, priceRub: 0 },
-  { id: 'pack_10', label: 'Стандарт', credits: 10, priceRub: 490, badge: 'ХИТ', popular: true },
-  { id: 'pack_25', label: 'Профи', credits: 25, priceRub: 990 },
+  { id: 'trial', label: 'Старт', credits: 1, priceRub: 0 },
+  { id: 'pack_10', label: '+10 откликов', credits: 10, priceRub: 149 },
+  {
+    id: 'pack_30',
+    label: '+30 откликов',
+    credits: 30,
+    priceRub: 399,
+    badge: 'ХИТ',
+    popular: true,
+  },
+  { id: 'pack_50', label: '+50 откликов', credits: 50, priceRub: 599 },
+  { id: 'pack_100', label: '+100 откликов', credits: 100, priceRub: 999 },
 ] as const;
+
+/** One-time bonus granted when a user first signs up. */
+export const SIGNUP_BONUS_CREDITS = 2;
 
 export const LIMITS = {
   resumeTextMin: 200,

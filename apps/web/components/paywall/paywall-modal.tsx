@@ -24,16 +24,18 @@ interface Props {
 }
 
 const PAID_PACKAGES = CREDIT_PACKAGES.filter((p) => p.priceRub > 0);
+const DEFAULT_SELECTED =
+  PAID_PACKAGES.find((p) => p.popular)?.id ?? PAID_PACKAGES[0]?.id ?? 'pack_30';
 
 const FEATURES = [
   'Полный текст адаптированного резюме',
-  'Персонализированное сопроводительное письмо',
+  'Персональное сопроводительное письмо',
   'Анализ ключевых навыков вакансии',
-  'Советы по прохождению интервью',
+  'История откликов в профиле',
 ];
 
 export function PaywallModal({ trigger, defaultOpen }: Props) {
-  const [selected, setSelected] = useState(PAID_PACKAGES[0]?.id ?? 'pack_10');
+  const [selected, setSelected] = useState(DEFAULT_SELECTED);
   const [loading, setLoading] = useState(false);
 
   async function onPay() {
@@ -60,24 +62,23 @@ export function PaywallModal({ trigger, defaultOpen }: Props) {
           <div className="mx-auto grid size-11 place-items-center rounded-2xl bg-primary/12 text-primary">
             <Sparkles className="size-5" />
           </div>
-          <DialogTitle className="text-center">Ваш отклик почти готов</DialogTitle>
+          <DialogTitle className="text-center">Докупите отклики</DialogTitle>
           <DialogDescription className="text-center">
-            Разблокируйте полный текст резюме и сопроводительное письмо. Без подписок —
-            оплачиваете только отклики, которые используете.
+            Чем больше пакет — тем дешевле один отклик. Без подписок и автосписаний.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {PAID_PACKAGES.map((pkg) => {
             const isSelected = pkg.id === selected;
-            const perLetter = Math.round(pkg.priceRub / pkg.credits);
+            const perLetter = Math.round((pkg.priceRub / pkg.credits) * 10) / 10;
             return (
               <button
                 key={pkg.id}
                 type="button"
                 onClick={() => setSelected(pkg.id)}
                 className={cn(
-                  'relative rounded-2xl border p-5 text-left transition',
+                  'relative rounded-2xl border p-4 text-left transition',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                   isSelected
                     ? 'border-primary bg-primary/5 shadow-[var(--shadow-glow-primary)]'
@@ -92,19 +93,14 @@ export function PaywallModal({ trigger, defaultOpen }: Props) {
                     {pkg.badge}
                   </Badge>
                 )}
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {pkg.label}
+                <p className="font-display text-2xl font-bold">+{pkg.credits}</p>
+                <p className="text-xs text-muted-foreground">
+                  {pluralRu(pkg.credits, ['отклик', 'отклика', 'откликов'])}
                 </p>
-                <p className="mt-1 font-display text-2xl font-bold">
-                  {pkg.credits}{' '}
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {pluralRu(pkg.credits, ['отклик', 'отклика', 'откликов'])}
-                  </span>
-                </p>
-                <p className="mt-3 font-display text-xl font-semibold text-primary">
+                <p className="mt-3 font-display text-lg font-semibold text-primary">
                   {formatRub(pkg.priceRub)}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground">
                   {formatRub(perLetter)} за отклик
                 </p>
               </button>

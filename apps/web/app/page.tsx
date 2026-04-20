@@ -7,38 +7,21 @@ import {
   MessageSquareOff,
   Cpu,
   Users,
-  Timer,
   CheckCircle2,
   X,
-  Zap,
 } from 'lucide-react';
 import { AdaptForm } from '@/components/forms/adapt-form';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PricingBlock } from '@/components/pricing/pricing-block';
+import { AnimatedHeading } from '@/components/animated-heading';
 
 const STAT_STRIP = [
-  {
-    value: '82%',
-    label: 'откликов без ответа',
-    hint: 'hh.ru, 2025',
-  },
-  {
-    value: '11,4',
-    label: 'резюме на вакансию',
-    hint: 'индекс hh, март 2026',
-  },
-  {
-    value: '8 сек',
-    label: 'на первое решение',
-    hint: 'рекрутер + ATS',
-  },
-  {
-    value: '78%',
-    label: 'компаний фильтруют ATS',
-    hint: 'исследование vc.ru',
-  },
+  { value: '82%', label: 'откликов без ответа', hint: 'hh.ru, 2025' },
+  { value: '11,4', label: 'резюме на вакансию', hint: 'индекс hh, март 2026' },
+  { value: '8 сек', label: 'на первое решение', hint: 'рекрутер + ATS' },
+  { value: '78%', label: 'компаний фильтруют ATS', hint: 'исследование vc.ru' },
 ];
 
 const PAINS = [
@@ -54,7 +37,7 @@ const PAINS = [
   },
   {
     icon: Users,
-    title: '11 кандидатов на вакансию',
+    title: '11 резюме на одну вакансию',
     body: 'Индекс hh.ru — 11,4. Быть «ещё одним подходящим» недостаточно. Нужно попадать прицельно в то, что ищет работодатель.',
   },
 ];
@@ -99,20 +82,14 @@ export default function LandingPage() {
         <div className="gradient-mesh absolute inset-0 -z-10 opacity-80" aria-hidden />
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-20">
           <div className="mx-auto max-w-3xl text-center">
-            <Badge variant="primary" className="mx-auto mb-5">
-              <Zap className="size-3.5" />
-              AI-адаптация под ATS и рекрутера
-            </Badge>
-            <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-              82% ваших откликов{' '}
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                никто не читает
-              </span>
+            <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl">
+              <span className="block">82% ваших откликов</span>
+              <span className="mt-1 block text-primary/85">никто не читает</span>
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
+            <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">
               В 2026 году на каждую вакансию hh.ru — 11 кандидатов. ATS-фильтр решает за 8
-              секунд. Мы переписываем ваше резюме под конкретную вакансию так, чтобы его увидел
-              живой рекрутер — и написали вам в ответ.
+              секунд. Мы переписываем ваше резюме под конкретную вакансию, чтобы его увидел живой
+              рекрутер — и написал вам в ответ.
             </p>
             <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-3">
               <Button size="lg" asChild>
@@ -126,7 +103,7 @@ export default function LandingPage() {
               </Button>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
-              Без регистрации · 1 бесплатный отклик · 30 секунд на генерацию
+              Без регистрации · 1 бесплатный отклик на старте · ещё +2 за регистрацию
             </p>
           </div>
 
@@ -157,22 +134,23 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-10 sm:px-6" id="pains">
-        <div className="mb-10 text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Почему отклики «уходят в молчание»
-          </p>
-          <h2 className="font-display mt-2 text-3xl font-bold sm:text-4xl">
-            Дело не в вас. Дело в фильтре.
-          </h2>
-        </div>
+        <AnimatedHeading
+          eyebrow="Почему отклики «уходят в молчание»"
+          withQuestion
+          className="mb-10"
+        >
+          Дело не в вас. Дело в фильтре
+        </AnimatedHeading>
         <div className="grid gap-4 md:grid-cols-3">
           {PAINS.map((p) => (
-            <Card key={p.title}>
-              <CardContent className="flex flex-col gap-3 p-6">
+            <Card key={p.title} className="h-full">
+              <CardContent className="flex h-full flex-col gap-3 p-6">
                 <span className="grid size-11 place-items-center rounded-xl bg-primary/12 text-primary">
                   <p.icon className="size-5" />
                 </span>
-                <h3 className="font-display text-lg font-semibold">{p.title}</h3>
+                <h3 className="font-display text-base font-semibold leading-snug sm:text-lg">
+                  {p.title}
+                </h3>
                 <p className="text-sm text-muted-foreground">{p.body}</p>
               </CardContent>
             </Card>
@@ -181,25 +159,26 @@ export default function LandingPage() {
       </section>
 
       <section id="how-it-works" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="mb-10 text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Как это работает
-          </p>
-          <h2 className="font-display mt-2 text-3xl font-bold sm:text-4xl">
-            От ссылки до готового отклика — 30 секунд
-          </h2>
-        </div>
+        <AnimatedHeading
+          eyebrow="Как это работает"
+          withQuestion
+          className="mb-10"
+        >
+          От ссылки до готового отклика — 30 секунд
+        </AnimatedHeading>
         <div className="grid gap-4 md:grid-cols-3">
           {STEPS.map((s, i) => (
-            <Card key={s.title} className="relative overflow-hidden">
-              <CardContent className="flex flex-col gap-3 p-6">
+            <Card key={s.title} className="relative h-full overflow-hidden">
+              <CardContent className="flex h-full flex-col gap-3 p-6">
                 <div className="flex items-center justify-between">
                   <span className="grid size-11 place-items-center rounded-xl bg-primary/12 text-primary">
                     <s.icon className="size-5" />
                   </span>
                   <span className="font-mono text-xs text-muted-foreground">0{i + 1}</span>
                 </div>
-                <h3 className="font-display text-lg font-semibold">{s.title}</h3>
+                <h3 className="font-display text-base font-semibold leading-snug sm:text-lg">
+                  {s.title}
+                </h3>
                 <p className="text-sm text-muted-foreground">{s.desc}</p>
               </CardContent>
             </Card>
@@ -209,23 +188,26 @@ export default function LandingPage() {
 
       <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
         <Card className="overflow-hidden">
-          <CardContent className="grid gap-8 p-8 md:grid-cols-2 md:p-12">
-            <div className="space-y-4">
-              <Badge variant="muted">Обычный отклик</Badge>
-              <p className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm italic text-muted-foreground">
+          <CardContent className="grid items-stretch gap-8 p-8 md:grid-cols-2 md:p-12">
+            <div className="flex h-full flex-col">
+              <Badge variant="muted" className="self-start">
+                Обычный отклик
+              </Badge>
+              <p className="mt-4 flex-1 rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm italic text-muted-foreground">
                 «Здравствуйте, меня зовут Иван. Ищу работу Frontend-разработчиком. Есть опыт с
                 React и JS. Готов учиться…»
               </p>
-              <p className="text-xs text-muted-foreground">
-                ↓ ATS-фильтр: стоп-слова «готов учиться», нет ключевых навыков вакансии → отбой.
+              <p className="mt-4 text-xs text-muted-foreground">
+                ↓ Рекрутер даже не открыл ваше резюме — ATS срезал его по стоп-словам «готов
+                учиться» и отсутствию ключевых навыков вакансии.
               </p>
             </div>
-            <div className="space-y-4">
-              <Badge variant="primary">
+            <div className="flex h-full flex-col">
+              <Badge variant="primary" className="self-start">
                 <Sparkles className="size-3.5" />
                 Адаптировал ResumAI
               </Badge>
-              <p className="rounded-2xl border border-primary/20 bg-primary/5 p-5 text-sm font-medium leading-relaxed">
+              <p className="mt-4 flex-1 rounded-2xl border border-primary/20 bg-primary/5 p-5 text-sm font-medium leading-relaxed">
                 «Здравствуйте! Мой опыт разработки на{' '}
                 <mark className="rounded bg-primary/25 px-1 text-foreground">React (3 года)</mark>{' '}
                 совпадает с задачей{' '}
@@ -234,8 +216,8 @@ export default function LandingPage() {
                 </mark>
                 . В последнем проекте снизил LCP с 4,2 с до 1,6 с…»
               </p>
-              <p className="text-xs font-medium text-primary">
-                ↓ Ключевые слова вакансии + измеримый результат → рекрутер звонит.
+              <p className="mt-4 text-xs font-medium text-primary">
+                ↓ Ключевые слова вакансии + результаты → рекрутер уже набирает ваш номер.
               </p>
             </div>
           </CardContent>
@@ -244,9 +226,9 @@ export default function LandingPage() {
 
       <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
         <Card className="glass overflow-hidden">
-          <CardContent className="grid gap-8 p-8 md:grid-cols-2 md:p-12">
-            <div>
-              <Badge variant="muted" className="mb-3">
+          <CardContent className="grid items-stretch gap-8 p-8 md:grid-cols-2 md:p-12">
+            <div className="flex h-full flex-col">
+              <Badge variant="muted" className="mb-3 self-start">
                 hh.ru PRO · от 390 ₽/неделю
               </Badge>
               <h3 className="font-display text-2xl font-bold">Поднимает в топ списка</h3>
@@ -254,7 +236,7 @@ export default function LandingPage() {
                 Но не меняет содержимое резюме. Если резюме не попадает в ключи — вы просто
                 быстрее оказываетесь в топе мусорной кучи.
               </p>
-              <ul className="mt-5 space-y-2.5">
+              <ul className="mt-5 flex-1 space-y-2.5">
                 {VS_HH_PRO.hhPro.map((i) => (
                   <li key={i.text} className="flex items-start gap-2.5 text-sm">
                     {i.ok ? (
@@ -269,17 +251,17 @@ export default function LandingPage() {
                 ))}
               </ul>
             </div>
-            <div className="rounded-2xl bg-primary/5 p-6 ring-1 ring-primary/20 md:p-8">
-              <Badge variant="primary" className="mb-3">
+            <div className="flex h-full flex-col rounded-2xl bg-primary/5 p-6 ring-1 ring-primary/20 md:p-8">
+              <Badge variant="primary" className="mb-3 self-start">
                 <Sparkles className="size-3.5" />
-                ResumAI · от 49 ₽/отклик
+                ResumAI · от 15 ₽/отклик
               </Badge>
               <h3 className="font-display text-2xl font-bold">Делает так, чтобы топ имел смысл</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 Мы переписываем содержимое так, чтобы ATS-фильтр пропустил резюме, а рекрутер
                 сразу увидел совпадение с вакансией.
               </p>
-              <ul className="mt-5 space-y-2.5">
+              <ul className="mt-5 flex-1 space-y-2.5">
                 {VS_HH_PRO.resumai.map((i) => (
                   <li key={i.text} className="flex items-start gap-2.5 text-sm">
                     <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[color:var(--success)]" />
@@ -297,18 +279,19 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-3xl px-4 pb-20 text-center sm:px-6">
-        <Timer className="mx-auto size-10 text-primary" />
-        <h2 className="font-display mt-4 text-3xl font-bold sm:text-4xl">
-          Каждый вечер, потраченный на ручную переделку резюме, — это один вечер, который вы не
-          увидели свою семью.
+        <h2 className="font-display text-3xl font-bold sm:text-4xl">
+          Пока вы копипастите резюме под очередную вакансию,
+          <br />
+          кто-то уже сходил на собеседование.
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-          30 секунд на отклик вместо 40 минут. Первый — бесплатно.
+          Вставьте ссылку — получите адаптированное резюме и сопроводительное за полминуты.
+          Первый отклик — бесплатно, без карты.
         </p>
         <div className="mt-6">
           <Button size="lg" asChild>
             <Link href="#adapt">
-              Попробовать сейчас
+              Сделать первый отклик
               <ArrowRight className="size-4" />
             </Link>
           </Button>
