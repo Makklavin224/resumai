@@ -32,6 +32,14 @@ const EnvSchema = z.object({
    */
   ADMIN_EMAILS: z.string().optional().default(''),
 
+  // Social OAuth (optional) — start endpoints return 501 until these are set.
+  VK_CLIENT_ID: z.string().optional().default(''),
+  VK_CLIENT_SECRET: z.string().optional().default(''),
+  VK_REDIRECT_URI: z.string().optional().default(''),
+
+  TELEGRAM_BOT_USERNAME: z.string().optional().default(''),
+  TELEGRAM_BOT_TOKEN: z.string().optional().default(''),
+
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
   RATE_LIMIT_GENERATE_PER_HOUR: z.coerce.number().int().positive().default(20),
 });

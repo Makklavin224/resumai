@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { authApi } from '@/lib/auth-client';
+import { SocialButtons } from '@/components/auth/social-buttons';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -93,6 +94,18 @@ export default function RegisterPage() {
               <UserPlus className="size-4" />
               {loading ? 'Создаём…' : 'Создать аккаунт'}
             </Button>
+
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase tracking-wider">
+                <span className="bg-card px-3 text-muted-foreground">или</span>
+              </div>
+            </div>
+
+            <SocialButtons mode="register" />
+
             <p className="text-center text-xs text-muted-foreground">
               Регистрируясь, вы соглашаетесь с{' '}
               <Link href="/legal/terms" className="underline hover:text-foreground">

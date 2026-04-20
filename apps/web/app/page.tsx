@@ -103,9 +103,9 @@ export default function LandingPage() {
               />
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              В 2026 году на каждую вакансию hh.ru — 11 кандидатов. ATS-фильтр решает за 8
-              секунд. Мы переписываем ваше резюме под конкретную вакансию, чтобы его увидел живой
-              рекрутер — и написал вам в ответ.
+              За одну вакансию на hh.ru бьётесь вы и ещё десять. У робота-фильтра — 8 секунд,
+              чтобы решить, попадёте ли вы в руки живого рекрутера. Мы перепишем ваше резюме
+              под каждую вакансию так, чтобы фильтр пропустил — а HR набрал ваш номер.
             </p>
             <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-3">
               <MagneticButton>
@@ -121,7 +121,7 @@ export default function LandingPage() {
               </Button>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
-              Без регистрации · 1 бесплатный отклик на старте · ещё +2 за регистрацию
+              Попробуйте прямо сейчас — 1 отклик бесплатно, ещё +2 сразу после регистрации
             </p>
           </div>
 
@@ -149,9 +149,14 @@ export default function LandingPage() {
             <AdaptForm />
           </div>
         </div>
+        {/* soft vertical fade from hero mesh into the next section */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent via-background/60 to-background"
+        />
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 pb-10 sm:px-6" id="pains">
+      <section className="mx-auto max-w-6xl px-4 pt-6 pb-10 sm:px-6" id="pains">
         <AnimatedHeading
           eyebrow="Почему отклики «уходят в молчание»"
           withQuestion

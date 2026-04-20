@@ -95,17 +95,17 @@ export interface ApiError {
 
 export const CREDIT_PACKAGES: readonly CreditPackage[] = [
   { id: 'trial', label: 'Старт', credits: 1, priceRub: 0 },
-  { id: 'pack_10', label: '+10 откликов', credits: 10, priceRub: 149 },
+  { id: 'pack_10', label: '+10 откликов', credits: 10, priceRub: 99 },
   {
     id: 'pack_30',
     label: '+30 откликов',
     credits: 30,
-    priceRub: 399,
+    priceRub: 249,
     badge: 'ХИТ',
     popular: true,
   },
-  { id: 'pack_50', label: '+50 откликов', credits: 50, priceRub: 599 },
-  { id: 'pack_100', label: '+100 откликов', credits: 100, priceRub: 999 },
+  { id: 'pack_100', label: '+100 откликов', credits: 100, priceRub: 699 },
+  { id: 'pack_250', label: '+250 откликов', credits: 250, priceRub: 1490 },
 ] as const;
 
 /** One-time bonus granted when a user first signs up. */

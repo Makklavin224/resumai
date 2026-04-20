@@ -6,6 +6,10 @@ export const users = pgTable('users', {
   passwordHash: text('password_hash').notNull(),
   displayName: text('display_name'),
   isAdmin: boolean('is_admin').notNull().default(false),
+  /** "vk" | "telegram" | null for email signups */
+  provider: text('provider'),
+  /** External id from the OAuth provider (vk user id, telegram user id). */
+  providerId: text('provider_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -15,6 +19,17 @@ export const sessions = pgTable('sessions', {
   credits: integer('credits').notNull().default(1),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * One row per IP that consumed the anonymous free-trial credit. Blocks the
+ * "clear cookies + incognito" abuse loop — same IP gets 0 credits on the
+ * second anon session, only registration (or paid purchase) grants more.
+ */
+export const anonTrialIps = pgTable('anon_trial_ips', {
+  ipHash: text('ip_hash').primaryKey(),
+  firstSessionId: uuid('first_session_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const transactions = pgTable('transactions', {
@@ -31,7 +46,6 @@ export const transactions = pgTable('transactions', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-/** Metadata about each generation so admins + profile can list history. */
 export const generations = pgTable('generations', {
   id: uuid('id').primaryKey().defaultRandom(),
   sessionId: uuid('session_id')
