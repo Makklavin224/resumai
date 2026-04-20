@@ -20,6 +20,8 @@ import { CountUp } from '@/components/motion/count-up';
 import { WordReveal } from '@/components/motion/word-reveal';
 import { MagneticButton } from '@/components/motion/magnetic-button';
 import { FloatingOrbs } from '@/components/motion/floating-orbs';
+import { TiltCard } from '@/components/motion/tilt-card';
+import { KeywordSweep } from '@/components/motion/keyword-sweep';
 
 interface Stat {
   value: number;
@@ -166,15 +168,17 @@ export default function LandingPage() {
         </AnimatedHeading>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {PAINS.map((p) => (
-            <Card key={p.title} className="h-full">
-              <CardContent className="flex h-full flex-col gap-3 p-6">
-                <span className="grid size-11 place-items-center rounded-xl bg-primary/12 text-primary">
-                  <p.icon className="size-5" />
-                </span>
-                <h3 className="font-display text-lg font-semibold leading-snug">{p.title}</h3>
-                <p className="text-sm text-muted-foreground">{p.body}</p>
-              </CardContent>
-            </Card>
+            <TiltCard key={p.title} max={5}>
+              <Card className="h-full">
+                <CardContent className="flex h-full flex-col gap-3 p-6">
+                  <span className="grid size-11 place-items-center rounded-xl bg-primary/12 text-primary">
+                    <p.icon className="size-5" />
+                  </span>
+                  <h3 className="font-display text-lg font-semibold leading-snug">{p.title}</h3>
+                  <p className="text-sm text-muted-foreground">{p.body}</p>
+                </CardContent>
+              </Card>
+            </TiltCard>
           ))}
         </div>
       </section>
@@ -185,18 +189,20 @@ export default function LandingPage() {
         </AnimatedHeading>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {STEPS.map((s, i) => (
-            <Card key={s.title} className="relative h-full overflow-hidden">
-              <CardContent className="flex h-full flex-col gap-3 p-6">
-                <div className="flex items-center justify-between">
-                  <span className="grid size-11 place-items-center rounded-xl bg-primary/12 text-primary">
-                    <s.icon className="size-5" />
-                  </span>
-                  <span className="font-mono text-xs text-muted-foreground">0{i + 1}</span>
-                </div>
-                <h3 className="font-display text-lg font-semibold leading-snug">{s.title}</h3>
-                <p className="text-sm text-muted-foreground">{s.desc}</p>
-              </CardContent>
-            </Card>
+            <TiltCard key={s.title} max={5}>
+              <Card className="relative h-full overflow-hidden">
+                <CardContent className="flex h-full flex-col gap-3 p-6">
+                  <div className="flex items-center justify-between">
+                    <span className="grid size-11 place-items-center rounded-xl bg-primary/12 text-primary">
+                      <s.icon className="size-5" />
+                    </span>
+                    <span className="font-mono text-xs text-muted-foreground">0{i + 1}</span>
+                  </div>
+                  <h3 className="font-display text-lg font-semibold leading-snug">{s.title}</h3>
+                  <p className="text-sm text-muted-foreground">{s.desc}</p>
+                </CardContent>
+              </Card>
+            </TiltCard>
           ))}
         </div>
       </section>
@@ -224,12 +230,9 @@ export default function LandingPage() {
               </Badge>
               <p className="mt-4 flex-1 rounded-2xl border border-primary/20 bg-background/70 p-5 text-sm font-medium leading-relaxed">
                 «Здравствуйте! Мой опыт разработки на{' '}
-                <mark className="rounded bg-accent/40 px-1 text-foreground">React (3 года)</mark>{' '}
-                совпадает с задачей{' '}
-                <mark className="rounded bg-accent/40 px-1 text-foreground">
-                  оптимизации SPA
-                </mark>
-                . В последнем проекте снизил LCP с 4,2 с до 1,6 с…»
+                <KeywordSweep delay={0.1}>React (3 года)</KeywordSweep> совпадает с задачей{' '}
+                <KeywordSweep delay={0.35}>оптимизации SPA</KeywordSweep>. В последнем проекте
+                снизил LCP с 4,2 с до 1,6 с…»
               </p>
               <p className="mt-4 text-xs font-medium text-primary">
                 ↓ Ключевые слова вакансии + результаты → рекрутер уже набирает ваш номер.
