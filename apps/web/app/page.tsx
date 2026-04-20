@@ -309,7 +309,7 @@ export default function LandingPage() {
         <div className="mt-6">
           <MagneticButton>
             <Button size="lg" asChild>
-              <Link href="#adapt">
+              <Link href="/register">
                 Сделать первый отклик
                 <ArrowRight className="size-4" />
               </Link>
