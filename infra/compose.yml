@@ -1,0 +1,102 @@
+name: resumai
+
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      RESUMAI_DOMAIN: ${RESUMAI_DOMAIN:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      web:
+        condition: service_started
+      api:
+        condition: service_started
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.web
+      args:
+        PUBLIC_API_URL: http://api:4000
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PUBLIC_API_URL: http://api:4000
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL}
+    expose:
+      - "3000"
+    depends_on:
+      api:
+        condition: service_started
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      API_PORT: 4000
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL}
+      PUBLIC_API_URL: ${PUBLIC_API_URL}
+      DATABASE_URL: postgresql://resumai:${POSTGRES_PASSWORD}@postgres:5432/resumai
+      REDIS_URL: redis://redis:6379
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_PROXY_URL: ${OPENAI_PROXY_URL}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
+      OPENAI_FALLBACK_MODEL: ${OPENAI_FALLBACK_MODEL:-gpt-4o-mini}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}
+      YOOKASSA_SHOP_ID: ${YOOKASSA_SHOP_ID}
+      YOOKASSA_SECRET_KEY: ${YOOKASSA_SECRET_KEY}
+      YOOKASSA_WEBHOOK_SECRET: ${YOOKASSA_WEBHOOK_SECRET}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      RATE_LIMIT_GENERATE_PER_HOUR: ${RATE_LIMIT_GENERATE_PER_HOUR:-20}
+    expose:
+      - "4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: resumai
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: resumai
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resumai"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  caddy-data:
+  caddy-config:
+  pg-data:
+  redis-data:
