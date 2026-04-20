@@ -8,11 +8,15 @@ const SESSION_COOKIE = 'resumai_sid';
 const SESSION_MAX_AGE_DAYS = 90;
 
 function cookieOptions() {
+  // Only mark Secure when the public surface is actually HTTPS — otherwise
+  // the browser accepts the Set-Cookie but never sends it back over HTTP,
+  // and the next request looks session-less.
+  const isHttps = (process.env.PUBLIC_WEB_URL ?? '').startsWith('https://');
   return {
     path: '/',
     httpOnly: true,
     sameSite: 'lax' as const,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isHttps,
     maxAge: SESSION_MAX_AGE_DAYS * 24 * 60 * 60,
     signed: true,
   };
