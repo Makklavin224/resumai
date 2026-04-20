@@ -15,7 +15,7 @@ import { LIMITS } from '@resumai/shared';
 
 export async function buildServer() {
   const app = Fastify({
-    logger,
+    loggerInstance: logger,
     trustProxy: true,
     bodyLimit: 12 * 1024 * 1024,
   });

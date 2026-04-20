@@ -19,14 +19,13 @@ COPY apps/web apps/web
 ARG PUBLIC_API_URL=http://api:4000
 ENV PUBLIC_API_URL=$PUBLIC_API_URL
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm --filter @resumai/web build
+RUN pnpm --filter @resumai/shared build && pnpm --filter @resumai/web build
 
 # --- Runtime (standalone output keeps image small) ---
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN addgroup -S nodegrp && adduser -S node -G nodegrp
 
 COPY --from=build /app/apps/web/.next/standalone ./
 COPY --from=build /app/apps/web/.next/static ./apps/web/.next/static

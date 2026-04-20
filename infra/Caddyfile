@@ -1,28 +1,21 @@
 {
 	email admin@resumai.ru
-	# Let's Encrypt staging endpoint — uncomment while testing domain wiring.
-	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }
 
-# Deploy on raw IP first; when RESUMAI_DOMAIN is set in .env, rebuild/reup
-# and this block auto-serves HTTPS with Let's Encrypt.
-{$RESUMAI_DOMAIN:http://} {
+:80 {
 	encode zstd gzip
 	header {
-		Strict-Transport-Security "max-age=63072000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
 		Referrer-Policy "strict-origin-when-cross-origin"
-		Content-Security-Policy "default-src 'self'; img-src 'self' data: https://*.hh.ru; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; connect-src 'self' https://api.yookassa.ru; frame-src https://yookassa.ru https://yoomoney.ru;"
+		Content-Security-Policy "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; connect-src 'self' https://api.yookassa.ru; frame-src https://yookassa.ru https://yoomoney.ru;"
 		-Server
 	}
 
-	# API: proxy /api/* to Fastify.
 	handle /api/* {
 		reverse_proxy api:4000
 	}
 
-	# Everything else -> Next.js standalone server.
 	handle {
 		reverse_proxy web:3000
 	}
