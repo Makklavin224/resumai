@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Lock, Sparkles, Target } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -11,21 +11,73 @@ import { RecommendationCard } from '@/components/results/recommendation-card';
 import { MatchRow } from '@/components/results/match-row';
 import { CoverLetter } from '@/components/results/cover-letter';
 import { PaywallModal } from '@/components/paywall/paywall-modal';
+import { Skeleton } from '@/components/ui/skeleton';
 import { DEMO_RESULT } from '@/lib/demo';
+import type { GenerateResult } from '@resumai/shared';
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
+async function fetchResult(id: string): Promise<GenerateResult | null> {
+  if (id === 'demo') return DEMO_RESULT;
+  try {
+    const res = await fetch(`/api/result/${id}`, { credentials: 'include', cache: 'no-store' });
+    if (!res.ok) return null;
+    return (await res.json()) as GenerateResult;
+  } catch {
+    return null;
+  }
+}
+
 export default function ResultPage({ params }: Props) {
   const { id } = use(params);
-  // TODO(api): fetch `/api/result/${id}` once backend is wired (Phase 5).
-  const result = DEMO_RESULT;
+  const [result, setResult] = useState<GenerateResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const data = await fetchResult(id);
+      if (cancelled) return;
+      if (!data) setNotFound(true);
+      setResult(data);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  // After returning from YooKassa (?paid=1), re-fetch until credits update so
+  // the preview unlocks automatically.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('paid') !== '1') return;
+    let tries = 0;
+    const timer = setInterval(async () => {
+      tries += 1;
+      const data = await fetchResult(id);
+      if (data?.kind === 'full' || tries > 10) {
+        clearInterval(timer);
+        if (data) setResult(data);
+        url.searchParams.delete('paid');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [id]);
+
+  if (loading) return <ResultSkeleton />;
+  if (notFound || !result) return <ResultMissing id={id} />;
+
   const isLocked = result.kind === 'preview';
   const visibleGaps = isLocked ? result.gaps.slice(0, 1) : result.gaps;
-  const hiddenGaps = isLocked ? result.gaps.length - visibleGaps.length : 0;
+  const hiddenGaps = isLocked ? Math.max(0, 3 - visibleGaps.length) : 0;
   const visibleMatches = isLocked ? result.matches.slice(0, 1) : result.matches;
-  const hiddenMatches = isLocked ? result.matches.length - visibleMatches.length : 0;
+  const hiddenMatches = isLocked ? Math.max(0, 3 - visibleMatches.length) : 0;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
@@ -37,7 +89,7 @@ export default function ResultPage({ params }: Props) {
           </Link>
         </Button>
         <Badge variant={isLocked ? 'muted' : 'success'}>
-          {isLocked ? 'Превью' : 'Полный результат'} · id: {id}
+          {isLocked ? 'Превью' : 'Полный результат'} · id: {id.slice(0, 8)}
         </Badge>
       </div>
 
@@ -62,7 +114,7 @@ export default function ResultPage({ params }: Props) {
               <Sparkles className="size-5 text-primary" />
               Рекомендации по резюме
             </h2>
-            <Badge variant="primary">{result.gaps.length} штук</Badge>
+            <Badge variant="primary">{result.gaps.length}</Badge>
           </div>
           <div className="space-y-3">
             {visibleGaps.map((gap, i) => (
@@ -76,8 +128,7 @@ export default function ResultPage({ params }: Props) {
                     <Lock className="size-5" />
                   </span>
                   <p className="text-sm font-medium">
-                    Ещё {hiddenGaps}{' '}
-                    {hiddenGaps === 1 ? 'рекомендация' : 'рекомендаций'} скрыто
+                    Ещё {hiddenGaps} {hiddenGaps === 1 ? 'рекомендация' : 'рекомендаций'} скрыто
                   </p>
                   <PaywallModal
                     trigger={
@@ -119,7 +170,7 @@ export default function ResultPage({ params }: Props) {
         </div>
       </section>
 
-      <section className="mt-8 relative">
+      <section className="relative mt-8">
         <CoverLetter
           text={result.coverLetter}
           previewText={result.previewCoverLetter}
@@ -131,7 +182,7 @@ export default function ResultPage({ params }: Props) {
       </section>
 
       {isLocked && (
-        <aside className="sticky bottom-4 mt-8 mx-auto max-w-3xl">
+        <aside className="sticky bottom-4 mx-auto mt-8 max-w-3xl">
           <Card className="glass">
             <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
@@ -141,7 +192,7 @@ export default function ResultPage({ params }: Props) {
                 <div>
                   <p className="font-display text-base font-semibold">Разблокируйте полностью</p>
                   <p className="text-xs text-muted-foreground">
-                    Все рекомендации, все совпадения и письмо целиком за один клик
+                    Все рекомендации, совпадения и письмо целиком — за один клик
                   </p>
                 </div>
               </div>
@@ -157,6 +208,43 @@ export default function ResultPage({ params }: Props) {
           </Card>
         </aside>
       )}
+    </div>
+  );
+}
+
+function ResultSkeleton() {
+  return (
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-12 sm:px-6">
+      <Skeleton className="h-10 w-60" />
+      <Skeleton className="h-4 w-full max-w-xl" />
+      <div className="grid gap-4 lg:grid-cols-5">
+        <div className="space-y-3 lg:col-span-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-32 w-full" />
+          ))}
+        </div>
+        <div className="space-y-3 lg:col-span-2">
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </div>
+      <Skeleton className="h-64 w-full" />
+    </div>
+  );
+}
+
+function ResultMissing({ id }: { id: string }) {
+  return (
+    <div className="mx-auto flex min-h-[calc(100vh-8rem)] max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
+      <h1 className="font-display text-3xl font-bold">Результат {id} не найден</h1>
+      <p className="text-sm text-muted-foreground">
+        Возможно, результат устарел (живёт в кеше 1 час) или сессия сброшена. Создайте новый
+        отклик — это займёт меньше двух минут.
+      </p>
+      <Button asChild>
+        <Link href="/">
+          <ArrowLeft className="size-4" />К форме
+        </Link>
+      </Button>
     </div>
   );
 }
