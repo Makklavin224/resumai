@@ -1,4 +1,5 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+import { randomBytes } from 'node:crypto';
 import { db } from '../../db/client.js';
 import { users, sessions } from '../../db/schema.js';
 import type { User } from '../../db/schema.js';
@@ -72,4 +73,45 @@ export async function grantSignupBonus(sessionId: string, amount: number): Promi
     .update(sessions)
     .set({ credits: row.credits + amount, updatedAt: new Date() })
     .where(eq(sessions.id, sessionId));
+}
+
+/**
+ * Look up (provider, providerId) → user. Creates one if missing so OAuth
+ * callers (VK, Telegram) can treat the call as upsert + "is this the first
+ * login?" signal for the signup bonus.
+ *
+ * Email is unique+notNull in the schema, so OAuth users get a synthetic
+ * address (e.g. "tg_7788@telegram.resumai.local") which the user can later
+ * replace with a real one from the profile screen.
+ */
+export async function findOrCreateOAuthUser(input: {
+  provider: 'vk' | 'telegram';
+  providerId: string;
+  displayName?: string | null;
+  email?: string | null;
+}): Promise<{ user: User; created: boolean }> {
+  const providerId = String(input.providerId);
+  const [existing] = await db
+    .select()
+    .from(users)
+    .where(and(eq(users.provider, input.provider), eq(users.providerId, providerId)));
+  if (existing) return { user: existing, created: false };
+
+  const syntheticEmail =
+    input.email?.trim().toLowerCase() ||
+    `${input.provider}_${providerId}@${input.provider}.resumai.local`;
+  const passwordHash = await hashPassword(randomBytes(24).toString('hex'));
+  const [row] = await db
+    .insert(users)
+    .values({
+      email: syntheticEmail,
+      passwordHash,
+      displayName: input.displayName?.trim() || null,
+      provider: input.provider,
+      providerId,
+      isAdmin: isSeedAdmin(syntheticEmail),
+    })
+    .returning();
+  if (!row) throw new Error('failed to create oauth user');
+  return { user: row, created: true };
 }
