@@ -4,6 +4,7 @@ import { Providers } from '@/components/providers';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { CookieBanner } from '@/components/cookie-banner';
+import { YandexMetrika } from '@/components/yandex-metrika';
 import { fontDisplay, fontSans, fontMono } from '@/lib/fonts';
 import { cn } from '@/lib/cn';
 
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       )}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
+        <YandexMetrika />
         <Providers>
           <SiteHeader />
           <main className="flex-1">{children}</main>
